@@ -14,7 +14,7 @@
 - les "gènes" des creatures (leurs mouvements), et leur score
 - les gènes du meilleur (pas sur voir question à la fin)
 - l’index de la prochaine créature à évaluer
-- semaphores // pour ?
+- semaphores gérer les exclusions
 
 ### Representation de la grille
 
@@ -24,11 +24,11 @@ Je propose d'y stocker si une case est libre, ou si c'est un obstacle, l'arrivé
 
 ### Représentation des gènes
 
-Dans la mémoire partagée:
-- soit T char (UInt8)
-- soit T/2 UInt8 ou T/5 UInt16 comme 8 possibilités -> 3 bits
+Des char (Int8) dans la mémoire partagée. Des constantes pour les directions
 
-(suivi si nécessaire de vide pour aligner le reste)
+-OU-
+
+une enum
 
 ## Processes
 
