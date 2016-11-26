@@ -3,7 +3,7 @@
 ## Shared memory
 
 - les données du programme
-  - grille (si on l'emballe on y retient height (M) et witdh (N), et peut-être départ)
+  - grille (avec height (M) et witdh (N))
   - départ
   - arrivée
   - number of processes (P)
@@ -18,9 +18,9 @@
 
 ### Representation de la grille
 
-On emballe la grille joliment dans une structure, ça permet de checker les indices, et par exemples de repondre 'obstacle' si on est en dehors
+On emballe la grille joliment dans une structure, ça permet de checker les indices, et par exemples de repondre 'obstacle' si on est en dehors. On y stocke si une case est vide (0), ou occupée pas un obstacle (1).
 
-Je propose d'y stocker si une case est libre, ou si c'est un obstacle, l'arrivée, le départ, et je propose comme valeur: 0 -> libre, 1 -> obstacle, 2 -> départ, 3 -> arrivée (ou bien on fait une enum si on veut être propre). Pas sur que ce soit intéressant d'y stocker le départ, mais pour l'arrivée je crois que c'est le plus simple il suffit de voir si la case occupée est l'arrivée -> on est arrivé
+Les positions de départ et d'arrivée sont retenues séparément, pour y accéder facilement pour placer le pion au départ, ou calculer la distance jusqu'à l'arrivée
 
 ### Représentation des gènes
 
@@ -28,7 +28,7 @@ Des char (Int8) dans la mémoire partagée. Des constantes pour les directions
 
 -OU-
 
-une enum
+une enum pour les directions
 
 ## Processes
 
