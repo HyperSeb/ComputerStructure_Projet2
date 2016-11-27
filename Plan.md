@@ -41,3 +41,4 @@ une enum pour les directions
 - est-ce qu'on choisis les commandes à taper? ou bien elles sont fixées mais pas indiquées dans l'énoncé car celui qui l'a fait les a oubliées / intentionellement omises pour perturber des élèves / elles y sont mais écrites en tout petits, dans un coin, en blanc, et en grec?
 - est-ce qu'on peut considérer seulement 7 possibilités pour les mouvements car il y a forcément un obstacle sous la créature quand elle peut bouger
 - est-ce que toutes les créatures mutent?
+- c99?
