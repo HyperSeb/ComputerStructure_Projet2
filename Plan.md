@@ -11,10 +11,10 @@
   - deletion rate (p)
   - mutation rate (m)
   - number of moves (T))
-- les "gènes" des creatures (leurs mouvements), et leur score
-- les gènes du meilleur (pas sur voir question à la fin)
-- l’index de la prochaine créature à évaluer
-- semaphores gérer les exclusions
+- un tableau avec les génomes des creatures
+- un tableau pour retenir les couple indice des gènes et score
+- une semaphore pour compter le nombre de créatures encore à traiter au cours d'une génération
+- une semaphore pour compter le nombre de générations à produire
 
 ### Representation de la grille
 
@@ -22,23 +22,34 @@ On emballe la grille joliment dans une structure, ça permet de checker les indi
 
 Les positions de départ et d'arrivée sont retenues séparément, pour y accéder facilement pour placer le pion au départ, ou calculer la distance jusqu'à l'arrivée
 
-### Représentation des gènes
+### Représentation des génomes
 
-Des char (Int8) dans la mémoire partagée. Des constantes pour les directions
-
--OU-
-
-une enum pour les directions
+Une direction est une enum, un génome est un tableau de direction, voilà
 
 ## Processes
 
 - P proccessus esclaves pour l'évaluation des creatures
 - un processus interface qui s'occupe d'écouter sagement l'utilisateur, et transmet les infos au maître
-- un processus maître, celui qui s'occupe de dire au processus exclaves quoi faire (avec les queues (j'imagine que c'est là qu'on s'en sers)), et qui gère la création de plusieurs générations, le tri, et autre chose du genre
+- un processus maître, celui qui s'occupe de dire au processus exclaves quoi faire
+
+### Maitre
+
+Le maitre décrémente la semaphore des générations.
+Pour une génération, il charge la queue (on est obligé d'utiliser une queue) avec tous les indices à traiter, et on incrémente la semaphore des créatures, ensuite attend qu'elle atteigne 0; puis trie le tableau des scores (!! le dernier doit rester le meilleur durant le tri)
+
+### Esclave
+
+Récupère un indice à traiter de la queue, crée un nouvelle créature à partir d'une des meilleurs, l'évalue, note son score, décrémente la semaphore
+
+### Hal (celui qui discute avec l'utilisateur)
+
+Attend l'utilisateur.
+Si on lui demande des créer de nouvelles générations, il incrémente la sémaphore des générations.
+Si on lui demande d'afficher le meilleur, il récupère l'info dans le dernier du tableau trié, et fais l'animation.
+Si on lui demande de quitter, il fais le nettoyage et s'arrête.
 
 ## Trucs qu’on va devoir demander
 
-- est-ce qu'on choisis les commandes à taper? ou bien elles sont fixées mais pas indiquées dans l'énoncé car celui qui l'a fait les a oubliées / intentionellement omises pour perturber des élèves / elles y sont mais écrites en tout petits, dans un coin, en blanc, et en grec?
-- est-ce qu'on peut considérer seulement 7 possibilités pour les mouvements car il y a forcément un obstacle sous la créature quand elle peut bouger
-- est-ce que toutes les créatures mutent?
-- c99?
+- comment évaluer un score correct?
+- peut-on utiliser une sémarphore en plus de la queue pour la comunication maitre-esclaves?
+- peut-on vraiment créer les nouvelles créatures dans les esclaves?
