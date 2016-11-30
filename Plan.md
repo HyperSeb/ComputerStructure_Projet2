@@ -1,20 +1,22 @@
 # Plan
 
-## Shared memory
+## Files de messages
 
-- les données du programme
-  - grille (avec height (M) et witdh (N))
-  - départ
-  - arrivée
-  - number of processes (P)
-  - number of creature (C)
-  - deletion rate (p)
-  - mutation rate (m)
-  - number of moves (T))
-- un tableau avec les génomes des creatures
-- un tableau pour retenir les couple indice des gènes et score
-- une semaphore pour compter le nombre de créatures encore à traiter au cours d'une génération
-- une semaphore pour compter le nombre de générations à produire
+- une file entre le maitre et les esclaves, pour transmettre les indices des créatures à évaluer, et dans l'autre sens ceux des créatures qui viennent d'être évaluées
+
+## Sémaphores
+
+- une sémaphore pour l'excusivité pour l'indice du meilleur score
+- une sémaphore pour compter le nombre de générations à produire
+
+## Mémoire partagée
+
+- indice du meilleur (taille:	1)
+- tableau des scores (taille:	nombre de créatures (C))
+- tableau des genomes (taille: C * nombre de déplacements (T))
+- grille (taille: hauteur (M) * largeur (N))
+- position du départ (taille: 2)
+- position du arrivée (taille: 2)
 
 ### Representation de la grille
 
@@ -26,30 +28,51 @@ Les positions de départ et d'arrivée sont retenues séparément, pour y accéd
 
 Une direction est une enum, un génome est un tableau de direction, voilà
 
-## Processes
+## Autres arguments
 
-- P proccessus esclaves pour l'évaluation des creatures
-- un processus interface qui s'occupe d'écouter sagement l'utilisateur, et transmet les infos au maître
-- un processus maître, celui qui s'occupe de dire au processus exclaves quoi faire
+- hauteur (M)
+- largeur (N)
+- nombre de déplacements (T)
+- nombre d'esclaves (P)
+- nombre de créatures (C)
+- taux de suppression (p)
+- taux de mutation (m)
+  
+## Processus
+
+- un processus interface (Hal) qui s'occupe d'écouter sagement l'utilisateur
+- un processus maître, celui qui s'occupe de dire aux processus exclaves quoi faire
+- P proccessus esclaves pour l'évaluation des créatures
+
+### Hal
+
+C'est celui lancé par l'utilisateur avec les arguments, il doit allouer la mémoire partagée, créer les sémaphores et la file de messages, ensuite créer le maitre.
+
+Ensuite il attend l'utilisateur, et on lui demande soit:
+- de créer de nouvelles générations, alors il incrémente la sémaphore des générations.
+- d'afficher le meilleur, il récupère l'info dans la mémoire partagée, et fais l'animation.
+- de quitter, il fais le nettoyage et s'arrête.
 
 ### Maitre
 
-Le maitre décrémente la semaphore des générations.
-Pour une génération, il charge la queue (on est obligé d'utiliser une queue) avec tous les indices à traiter, et on incrémente la semaphore des créatures, ensuite attend qu'elle atteigne 0; puis trie le tableau des scores (!! le dernier doit rester le meilleur durant le tri)
+Il crée les esclaves.
+
+Il décrémente la semaphore des générations. Pour la première fois, il doit créer tous les génomes, il envoie au fur et à mesure les indices dans la file de messages.
+Il crée une file a priorité, dont les éléments prioritaires sont ceux dont le score est le plus faible.
+Il récupère progressivement les indices des créatures évaluées de la file de messages, et les ajoute dans la file à priorité.
+
+Il entre ensuite dans une boucle: 
+- décrémente la sémaphore des générations
+- extrait les moins bonnes créatures de la file à priorité
+- crée pour chacune de ces créatures un nouveau génome, et l'envoie dans la file de messages aux esclaves
+- récupère les indices des créatures évaluées, et les ajoute dans la file à priorité
 
 ### Esclave
 
-Récupère un indice à traiter de la queue, crée un nouvelle créature à partir d'une des meilleurs, l'évalue, note son score, décrémente la semaphore
+Entre directement dans un boucle:
+- récupère l'indice d'une créature à évaluer dans la file de messages
+- évalue la créature
+- inscrit son score dans la mémoire partagée
+- renvoie l'indice au maitre
+- actualise l'indice de la meilleure créature si nécessaire, en s'assurant de l'exclusivité avec la sémaphore
 
-### Hal (celui qui discute avec l'utilisateur)
-
-Attend l'utilisateur.
-Si on lui demande des créer de nouvelles générations, il incrémente la sémaphore des générations.
-Si on lui demande d'afficher le meilleur, il récupère l'info dans le dernier du tableau trié, et fais l'animation.
-Si on lui demande de quitter, il fais le nettoyage et s'arrête.
-
-## Trucs qu’on va devoir demander
-
-- comment évaluer un score correct?
-- peut-on utiliser une sémarphore en plus de la queue pour la comunication maitre-esclaves?
-- peut-on vraiment créer les nouvelles créatures dans les esclaves?
