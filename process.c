@@ -53,44 +53,44 @@ void listenerProcess(int M, int N, int P, int T){
 		scanf(%c, &tmp);
 		switch (tmp) {
 		case 'G' :
-		signal(1);
-		break;
-		case 'M' :
-		scanf(%ud, &number);
-		for(unsigned int i = 0; i < number; i++){
 			signal(1);
-		}
-		break;
+			break;
+		case 'M' :
+			scanf(%ud, &number);
+			for(unsigned int i = 0; i < number; i++){
+				signal(1);
+			}
+			break;
 		
 		case 'B' :
-		wait(0);
-		best = Offsets->best;
-		if(best == -1){
-			printf("we haven't evaluated any creatures yet\n")
-		}
-		// we copy the table in order not to block the master process during T seconds
-		int bestCreature[T];
-		for(int j = 0; j < T; ++j){
-			bestCreature[j] = TableGenes[ind(best,j,T)];
-		}
-		signal(0);
-		showBest(M, N, bestCreature, T);
-		break;
+			wait(0);
+			best = Offsets->best;
+			if(best == -1){
+				printf("we haven't evaluated any creatures yet\n")
+			}
+			// we copy the table in order not to block the master process during T seconds
+			int bestCreature[T];
+			for(int j = 0; j < T; ++j){
+				bestCreature[j] = TableGenes[ind(best,j,T)];
+			}
+			signal(0);
+			showBest(M, N, bestCreature, T);
+			break;
 		
 		case 'Q' :
-		// delete the semaphore/message queue immediately and the shared memory 
-		// when all processes will be closed
-		shmctl(memId1 , IPC_RMID , 0);
-		shmctl(memId2 , IPC_RMID , 0);
-		shmctl(memId3 , IPC_RMID , 0);
-		shmctl(memId4 , IPC_RMID , 0);
-		semctl(semId,0,IPC_RMID,0));
-		msgctl(qId, IPC_RMID, 0); // will fail if the master already closed 
-		// the worker processes but we don't care
-		break;
+			// delete the semaphore/message queue immediately and the shared memory 
+			// when all processes will be closed
+			shmctl(memId1 , IPC_RMID , 0);
+			shmctl(memId2 , IPC_RMID , 0);
+			shmctl(memId3 , IPC_RMID , 0);
+			shmctl(memId4 , IPC_RMID , 0);
+			semctl(semId,0,IPC_RMID,0));
+			msgctl(qId, IPC_RMID, 0); // will fail if the master already closed 
+			// the worker processes but we don't care
+			break;
 		
 		default: 
-		printf("invalid command \n");
+			printf("invalid command \n");
 		}
 	}
 	exit(0)
