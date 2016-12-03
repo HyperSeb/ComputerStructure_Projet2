@@ -1,17 +1,26 @@
-#include<stdlib.h>
-#include<stdio.h>
-#include<sys/types.h>
-#include<sys/ipc.h>
-#include<sys/shm.h>
-#include<sys/sem.h>
-#include<sys/msg.h>
-#include<time.h>
-#include<stddef.h>
-#include<stdbool.h>
-#include"gridHandler.h"
-#include"process.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/msg.h>
+#include <time.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include "gridHandler.h"
+#include "process.h"
 
 
+static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
+	int value = atoi(argv[index]);
+	if (lowerBound > value || value > upperBound) {
+		fprintf(stderr, "Invalid argument %d\n", index);
+		exit(EXIT_FAILURE);
+	} else {
+		return value
+	}
+}
 
 // global variables
 int qId;
@@ -28,40 +37,16 @@ int main(int argc, char* argv[])
 	// checks the arguments
 	if(argc != 8 && argc != 9){
 		fprintf(stderr, "Invalid number of arguments\n");
-		exit(Exit);
-	}else{
-		int M = atoi(argv[1]), N = atoi(argv[2]), P = atoi(argv[3]), C = atoi(argv[4]), p = atoi(argv[5]),
-		m = atoi(argv[6]), T = atoi(argv[7]);
-		if(M < 3 || M > 5){
-			fprintf(stderr, "Invalid argument 1\n");
-			exit(1);
-		}
-		if( N < 5 ||  N > 10){
-			fprintf(stderr, "Invalid argument 2\n");
-			exit(1);
-		}
-		if(P < 1 || P > 10){
-			fprintf(stderr, "Invalid argument 3\n");
-			exit(1);
-		}
-		if(C < 100 || C > 1000){
-			fprintf(stderr, "Invalid argument number 4\n");
-			exit(1);
-		}
-		if(p < 20 || p > 80){
-			fprintf(stderr, "Invalid argument number 5\n");
-			exit(1);
-		}
-		if(m < 1 || m > 10){
-			fprintf(stderr, "Invalid argument number 6\n");
-			exit(1);
-		}
-		if(T < 5 || T > 20){
-			fprintf(stderr, "Invalid argument 7\n");
-			exit(1);
-		}
+		exit(EXIT_FAILURE);
 	}
-	
+	int M = getArgumentInInterval(argv, 1, /*bounds*/ 3, 5),
+	N = getArgumentInInterval(argv, 2, 5, 10),
+	P = getArgumentInInterval(argv, 3, 1, 10),
+	C = getArgumentInInterval(argv, 4, 100, 1000),
+	p = getArgumentInInterval(argv, 5, 20, 80),
+	m = getArgumentInInterval(argv, 6, 1, 10),
+	T = getArgumentInInterval(argv, 7, 5, 20);
+		
 	// shared memory management
 	key_t key1, key2, key3, key4, keysem, keyq;
 	pid_t pid;
@@ -179,14 +164,15 @@ int main(int argc, char* argv[])
 	int pid = 0;
 	pId = fork();
 	if (pId == 0){ // if we are the listener process
-		listenerProcess(int M, int N, int P, int T);
+		listenerProcess(M, N, P, T);
 	}
 	for(size_t i = 0; i < P; ++i){
 		pid = fork();
 		if(pid == 0){
-			workerProcess(int M, int N, int T);
+			workerProcess(M, N, T);
 		}
+		/*test for error*/
 	}
-	masterProcess(int P, int C, int p, int m);
+	masterProcess(P, C, p, m);
 	exit(0)
 }
