@@ -80,10 +80,9 @@ void listenerProcess(int M, int N, int P, int T){
 		case 'Q' :
 			// delete the semaphore/message queue immediately and the shared memory 
 			// when all processes will be closed
-			shmctl(memId1 , IPC_RMID , 0);
-			shmctl(memId2 , IPC_RMID , 0);
-			shmctl(memId3 , IPC_RMID , 0);
-			shmctl(memId4 , IPC_RMID , 0);
+			for (int i = 0; i < 4; i++) {
+				shmctl(memId[i], IPC_RMID, 0);
+			}
 			semctl(semId,0,IPC_RMID,0));
 			msgctl(qId, IPC_RMID, 0); // will fail if the master already closed 
 			// the worker processes but we don't care
