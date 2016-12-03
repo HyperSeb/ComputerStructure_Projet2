@@ -22,7 +22,10 @@ static int getArgumentInInterval(char** argv, int index, int lowerBound, int upp
 	}
 }
 
-static void* getSharedMemoryForNumberWithKeyOfSize(int index, key_t key, size_t size) {
+/* create a shared memory segment, using the id number index, the key key and 
+allocating a quantity of memory given by size
+*/
+static void* getSharedMemory(int index, key_t key, size_t size) {
 	// open the shared memory segment - create if necessary
 	if((memId[index] = shmget(key, size, IPC_CREAT|IPC_EXCL|0666)) == -1){
 		printf("Shared memory segment %d exists - opening as client\n", index+1);
@@ -33,7 +36,7 @@ static void* getSharedMemoryForNumberWithKeyOfSize(int index, key_t key, size_t 
 			exit(EXIT_FAILURE);
 		}
 	}else{
-		printf("Creating shared memory segment 1\n");
+		printf("Creating shared memory segment %d\n", index+1);
 	}
 	void* ptr = shmat(memId[index], 0, 0);
 	// map the shared memory segment into the current process
@@ -82,10 +85,10 @@ int main(int argc, char* argv[])
 	keysem = ftok(".", 'S');
 	keyq = ftok(".", 'Q');
 	
-	Offsets = (bestBegEnd*) getSharedMemoryForNumberWithKeyOfSize(1, key1, sizeof(bestBegEnd));
-	TableScores = (double*) getSharedMemoryForNumberWithKeyOfSize(2, key2, C * sizeof(double));
-	TableGenes = (int*) getSharedMemoryForNumberWithKeyOfSize(3, key3, C * T * sizeof(int));
-	Grid = (bool*) getSharedMemoryForNumberWithKeyOfSize(4, key4, M * N * sizeof(bool));
+	Offsets = (bestBegEnd*) getSharedMemory(1, key1, sizeof(bestBegEnd));
+	TableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
+	TableGenes = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
+	Grid = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
 	
 	// creating the semaphore array
 	printf("Attempting to create new semaphoreset with 2 members\n");
