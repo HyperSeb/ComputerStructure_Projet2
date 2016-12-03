@@ -22,10 +22,32 @@ static int getArgumentInInterval(char** argv, int index, int lowerBound, int upp
 	}
 }
 
+static void* getSharedMemoryForNumberWithKeyOfSize(int index, key_t key, size_t size) {
+	// open the shared memory segment - create if necessary
+	if((memId[index] = shmget(key, size, IPC_CREAT|IPC_EXCL|0666)) == -1){
+		printf("Shared memory segment %d exists - opening as client\n", index+1);
+		
+		// segment probably already exists - try as a client
+		if((memId[index] = shmget(key, size, 0)) == -1){
+			fprintf(stderr, "shmget\n");
+			exit(EXIT_FAILURE);
+		}
+	}else{
+		printf("Creating shared memory segment 1\n");
+	}
+	void* ptr = shmat(memId[index], 0, 0);
+	// map the shared memory segment into the current process
+	if(ptr == (void*)-1){
+		fprintf(stderr, "shmat\n");
+		exit(EXIT_FAILURE);
+	}
+	return ptr;
+}
+
 // global variables
 int qId;
 int semId;
-int memId1, memId2, memId3, memId4;
+int memId[4];
 bestBegEnd* Offsets;
 double* TableScores;
 int* TableGenes; 
@@ -60,75 +82,10 @@ int main(int argc, char* argv[])
 	keysem = ftok(".", 'S');
 	keyq = ftok(".", 'Q');
 	
-
-	// open the shared memory segment 1 - create if necessary
-	if((memId1 = shmget(key1, sizeof(bestBegEnd), IPC_CREAT|IPC_EXCL|0666)) == -1){
-		printf("Shared memory segment 1 exists - opening as client\n");
-		
-		// segment probably already exists - try as a client
-		if((memId1 = shmget(key1, sizeof(bestBegEnd), 0)) == -1){
-		fprintf(stderr, "shmget\n");
-		exit(1);
-		}
-	}else{
-		printf("Creating shared memory segment 1\n");
-	}
-	// map the shared memory segment into the current process
-	if((Offsets = (bestBegEnd*)shmat(memId1, 0, 0)) == (bestBegEnd*)-1){
-		fprintf(stderr, "shmat\n");
-		exit(1);
-	}
-	
-	// open the shared memory segment 2 - create if necessary
-	if((memId2 = shmget(key2, C*sizeof(double), IPC_CREAT|IPC_EXCL|0666)) == -1){
-		printf("Shared memory segment 2 exists - opening as client\n");
-		
-		if((memId2 = shmget(key2, C*sizeof(double), 0)) == -1){
-		fprintf(stderr, "shmget\n");
-		exit(1);
-		}
-	}else{
-		printf("Creating shared memory segment 2\n");
-	}
-	// map the shared memory segment into the current process
-	if((TableScores = (double*)shmat(memId2, 0, 0)) == (double*)-1){
-		fprintf(stderr, "shmat\n");
-		exit(1);
-	}
-	
-	// open the shared memory segment 3 - create if necessary
-	if((memId3 = shmget(key3, C*T*sizeof(int), IPC_CREAT|IPC_EXCL|0666)) == -1){
-		printf("Shared memory segment 3 exists - opening as client\n");
-		
-		if((memId3 = shmget(key3, C*T*sizeof(int), 0)) == -1){
-		fprintf(stderr, "shmget\n");
-		exit(1);
-		}
-	}else{
-		printf("Creating shared memory segment 3\n");
-	}
-	// map the shared memory segment into the current process
-	if((TableGenes = (int*)shmat(memId3, 0, 0)) == (int*)-1){
-		fprintf(stderr, "shmat\n");
-		exit(1);
-	}
-	
-	// open the shared memory segment 4 - create if necessary
-	if((memId4 = shmget(key4, M*N*sizeof(bool), IPC_CREAT|IPC_EXCL|0666)) == -1){
-		printf("Shared memory segment 4 exists - opening as client\n");
-		
-		if((memId4 = shmget(key4, M*N*sizeof(bool), 0)) == -1){
-		fprintf(stderr, "shmget\n");
-		exit(1);
-		}
-	}else{
-		printf("Creating shared memory segment 4\n");
-	}
-	// map the shared memory segment into the current process
-	if((Grid = (bool*)shmat(memId4, 0, 0)) == (bool*)-1){
-		fprintf(stderr, "shmat\n");
-		exit(1);
-	}
+	Offsets = (bestBegEnd*) getSharedMemoryForNumberWithKeyOfSize(1, key1, sizeof(bestBegEnd));
+	TableScores = (double*) getSharedMemoryForNumberWithKeyOfSize(2, key2, C * sizeof(double));
+	TableGenes = (int*) getSharedMemoryForNumberWithKeyOfSize(3, key3, C * T * sizeof(int));
+	Grid = (bool*) getSharedMemoryForNumberWithKeyOfSize(4, key4, M * N * sizeof(bool));
 	
 	// creating the semaphore array
 	printf("Attempting to create new semaphoreset with 2 members\n");
