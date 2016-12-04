@@ -110,6 +110,7 @@ void workerProcess(int M, int N, int T){
 
 void masterProcess(int P, int C, int p, int m){
 	int beginOffset = 0;
+	// creating the heap
 	while(true){
 		wait(1);
 		for(int i = beginOffset; i < C; ++i){
