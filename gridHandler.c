@@ -2,7 +2,9 @@
 #include<stdbool.h>
 #include "gridHandler.h"
 
-#define ind(i,j,width) (width)*i + j
+int ind(i,j,width){
+	return width*i + j;
+} 
 
 // génère aléatoirement la grille ET INITIALISE LES 3 CHAMPS DE OFFSET
 void randomGrid(unsigned int M, unsigned int N){
