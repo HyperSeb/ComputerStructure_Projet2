@@ -41,6 +41,6 @@ void randomGrid(unsigned int M, unsigned int N){
 	}
 }
 	
-int GridFromFile(unsigned int M, unsigned int N, char* name){
+void GridFromFile(unsigned int M, unsigned int N, char* name){
 	
 }
