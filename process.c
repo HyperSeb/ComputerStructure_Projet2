@@ -7,8 +7,8 @@
 #include<sys/sem.h>
 #include<sys/msg.h>
 #include "process.h"
-
-#define ind(i,j,width) width*i + j
+#include "gridHandler.h" //in order to acces the "ind" function
+#include "PriorityQueue.h"
 
 static void wait(int offset){
 	struct sembuf buf = { offset, -1, 0};
