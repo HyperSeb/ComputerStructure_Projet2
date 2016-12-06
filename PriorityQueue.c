@@ -9,8 +9,7 @@ static void swap(int* a, int* b) {
     *b = tmp;
 }
 
-// create a MinHeap with the given capacity
-MinHeap* createMaxHeap(size_t capacity) {
+MaxHeap* createMaxHeap(size_t capacity) {
     MaxHeap* heap = malloc(sizeof(MaxHeap));
     if (heap != NULL) {
         heap -> elements = malloc(capacity * sizeof(int));
@@ -41,7 +40,6 @@ static void maxHeapify(int* indices, size_t i, size_t end, double* array) {
     }
 }
 
-// extract the minimum value in the heap and place it after (at elements[count])
 int extractIndexForMax(MaxHeap* heap, double* array) {
     if (heap -> count == 0) {
         return;
@@ -58,7 +56,6 @@ static size_t parent(size_t index) {
     return (index == 0) ? 0 : (index - 1) / 2;
 }
 
-// insert a new value in the heap, return false if capacity is too low
 bool insertValueIn(int value, MaxHeap* heap, double* array) {
     if (heap != NULL && ((heap -> count) < (heap -> capacity))) {
         int* indices = heap -> indices;
@@ -77,12 +74,10 @@ bool insertValueIn(int value, MaxHeap* heap, double* array) {
     }
 }
 
-// return whether there is still place in the heap
 bool isFull(MaxHeap* heap) {
     return heap -> capacity == heap -> count;
 }
 
-// destroy a heap
 void destroyMaxHeap(MaxHeap* heap) {
     if (heap != NULL) {
         if (heap -> indices != NULL) {
