@@ -27,4 +27,4 @@ void workerProcess(int M, int N, int T);
 /* a process which goal is to handle the generation/classification/mutation of 
 the creatures
 */
-void masterProcess(int P, int C, int p, int m);
+void masterProcess(int P, int C, int p, int m, int T);
