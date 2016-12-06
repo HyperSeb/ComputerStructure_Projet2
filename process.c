@@ -12,24 +12,32 @@
 
 static void wait(int offset){
 	struct sembuf buf = { offset, -1, 0};
-	semop(semId, &buf, 1); // we ignore the errors since we have the certitude
-//to trigger some when we close the program
+	if((semop(semId, &buf, 1)) == -1){
+		fprintf(stderr, "Wait failed\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void signal(int offset){
 	struct sembuf buf = { offset, 1,0};
-	semop(semId, &buf, 1);// we ignore the errors since we have the certitude
-//to trigger some when we close the program
+	if((semop(semId, &buf, 1)) == -1){
+		fprintf(stderr, "Signal failed\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void sendMessage(myMsg* msg){
-	msgsnd(qId,msg, sizeof(myMsg) - sizeof(long), 0);// we ignore the errors 
-//since we have to certitude to trigger some when we close the program
+	if(msgsnd(qId,msg, sizeof(myMsg) - sizeof(long), 0) < 0){
+		fprintf(stderr, "sending a message failed\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void readMessage(long type, int* offset){
-    msgrcv(qId, offset, sizeof(myMsg) - sizeof(long), type,  0));// we ignore the errors 
-//since we have to certitude to trigger some when we close the program
+    if(msgrcv(qId, offset, sizeof(myMsg) - sizeof(long), type,  0) < 0){
+		fprintf(stderr, "reading a message failed\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 // show the best creature's movements on the terminal
@@ -47,21 +55,23 @@ void listenerProcess(int M, int N, int P, int T){
 	printf("      M followed by a number to request that number of generations\n");
 	printf("      B to display the best creature so far\n");
 	printf("      Q to close the program\n");
-	while(true){
+	while(Offsets->stop != 2){
 		char tmp = 'a';
 		unsigned int number = 0;
 		scanf(%c, &tmp);
 		switch (tmp) {
 		case 'G' :
-			signal(1);
+			if (Offsets->stop != 1){
+				signal(1);
+			}
 			break;
 		case 'M' :
+			if (Offsets->stop != 1){
 			scanf(%ud, &number);
 			for(unsigned int i = 0; i < number; i++){
 				signal(1);
 			}
 			break;
-		
 		case 'B' :
 			wait(0);
 			best = Offsets->best;
@@ -76,32 +86,54 @@ void listenerProcess(int M, int N, int P, int T){
 			signal(0);
 			showBest(M, N, bestCreature, T);
 			break;
-		
 		case 'Q' :
-			// delete the semaphore/message queue immediately
-			semctl(semId,0,IPC_RMID,0));
-			msgctl(qId, IPC_RMID, 0); // will fail if the master already closed 
-			// the worker processes but we don't care
+			if (Offsets->stop == 0){ // we have to close workers and master process
+				Offsets->stop = 2;
+				// all the workers processes will now close as soon as they get a message
+				for(size_t i = 0; i < P; ++i){
+					myMsg msg;
+					msg.type = 1; // the offset doesn't matter
+					sendMessage(&msg);
+				}
+				// the master can be waiting for a new generation or a message
+				signal(1); // we tell him to stop to wait (and to close)
+				myMsg msg; // we send a close message to the master
+				msg.type = 2;
+				msg.offset = -1;
+				sendMessage(&msg);
+			}else{
+				Offsets->stop = 2;
+			}
 			break;
 		
 		default: 
 			printf("invalid command \n");
 		}
 	}
-	exit(0)
+	for(int i = 0; i < P+1; ++i){  // we wait untill all processes are closed
+		wait(2);
+	}
+	// delete the semaphore/message queue, the shared memory has already been flagged for deletion
+	semctl(semId,0,IPC_RMID,0));
+	msgctl(qId, IPC_RMID, 0);
+	exit(EXIT_SUCCES);
 }
 
 void workerProcess(int M, int N, int T){
 	int offset;
-	while(true){
+	while(stop == 0){
 		readMessage(1, &offset);
+		if (stop != 0){
+			break;
+		}
 		computeScore(M, N, T, offset);
 		myMsg msg; // tells the master the math is done
 		msg.type = 2;
 		msg.offset = offset;
 		sendMessage(&msg);
 	}
-	exit(0)
+	signal(2); // signals we closed
+	exit(EXIT_SUCCESS);
 }
 
 void masterProcess(int P, int C, int p, int m){
