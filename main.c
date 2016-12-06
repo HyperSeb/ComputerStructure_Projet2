@@ -75,7 +75,6 @@ int main(int argc, char* argv[])
 	// shared memory management
 	key_t key1, key2, key3, key4, keysem, keyq;
 	pid_t pid;
-	int id, cntr;
 	union semun semopts;
 
 	key1 = ftok(".", 'M'); // offset of the best creature, the begin and end in the grid
