@@ -6,7 +6,6 @@ int ind(i,j,width){
 	return width*i + j;
 } 
 
-// génère aléatoirement la grille ET INITIALISE LES 3 CHAMPS DE OFFSET
 void randomGrid(unsigned int M, unsigned int N){
 	for(size_t k = 0; k < N*M; ++k){
 			Grid[k] = (bool) rand()%2;
@@ -43,4 +42,7 @@ void randomGrid(unsigned int M, unsigned int N){
 	
 void GridFromFile(unsigned int M, unsigned int N, char* name){
 	
+	
+	Offsets->best = -1;
+	Offsets->stop = 0;
 }
