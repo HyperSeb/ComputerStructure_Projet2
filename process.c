@@ -45,11 +45,6 @@ static void showBest(int M, int N, int* bestCreature, int T){
 	
 }
 
-// computes the score of the creature and possibly replace the best creature's index
-static void computeScore(int M, int N, int T, int offset){
-	// c'est pas cette fonction qui gère le cas où on aurait un bestScore == 0
-}
-
 void listenerProcess(int M, int N, int P, int T){
 	printf("type: G to request a new generation\n");
 	printf("      M followed by a number to request that number of generations\n");
@@ -119,6 +114,11 @@ void listenerProcess(int M, int N, int P, int T){
 	exit(EXIT_SUCCES);
 }
 
+// computes the score of the creature and possibly replace the best creature's index
+static void computeScore(int M, int N, int T, int offset){
+	// c'est pas cette fonction qui gère le cas où on aurait un bestScore == 0
+}
+	
 void workerProcess(int M, int N, int T){
 	int offset;
 	while(stop == 0){
@@ -136,20 +136,83 @@ void workerProcess(int M, int N, int T){
 	exit(EXIT_SUCCESS);
 }
 
-void masterProcess(int P, int C, int p, int m){
-	int beginOffset = 0;
-	// creating the heap
-	while(true){
-		wait(1);
-		if(Offsets->stop == 2){
-			break;
+// modifies the genes of the creature number index
+static void modifyCreature(int index, int p, int T){
+	for(int j = 0; j < T; ++j){
+		if((rand%99) < p){ // if the move mutates
+			int prev = TableGenes[ind(index,j,T)];
+			int new = rand()%8;
+			while(prev == new){
+				new = rand%8;
+			}
+			TableGenes[ind(index,j,T)] = new;
 		}
-		for(int i = beginOffset; i < C; ++i){
+	}
+}
+
+// creates a nex creature at the index
+static void createCreature(int index, int T){
+	for(int j = 0; j < T; ++j){
+		TableGenes[ind(index,j,T)] = rand()%8;
+	}
+}
+
+void masterProcess(int P, int C, int p, int m, int T){
+	MaxHeap* heap = createMaxHeap((size_t) C);
+	
+	// first generation
+	wait(1);
+	if(Offsets->stop == 2){
+		destroyMaxHeap(heap);
+		signal(2);
+	}
+	for(int i = 0; i < C; ++i){
+			createCreature(i, int T);
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
 			msg.offset = i;
 			sendMessage(&msg);
+	}
+	for(int i = 0; i < C; ++i){
+		int offset;
+		readMessage(2, &offset);
+		if(offset == -1){
+			break;
 		}
+		if(TableScores[offset] == 0.0){
+			Offsets->stop = 1;
+			for(size_t j = 0; j < P; ++j){
+				myMsg msg;
+				msg.type = 1; // the offset doesn't matter
+				sendMessage(&msg);
+			}
+			printf("One of the Creatures was able to reach the goal tile\n");
+			printf("All you can do now is watch his journey (B) or quit (Q)\n");
+			destroyMaxHeap(heap);
+			signal(2); // we have to signal we closed
+			return;
+		}
+		insertIndex(offset, heap, TableScores); // we insert the index in the heap
+	}
+	
+	int beginOffset = C * p / 100;
+	while(Offsets->stop != 2){
+		wait(1);
+		if(Offsets->stop == 2){
+			break;
+		}
+		
+		wait(0); // we could destroy the creature that was best at a moment
+		for(int i = beginOffset; i < C; ++i){
+			index = extractIndexForMax(heap, TableScores);
+			modifyCreature(index, int p, int T);
+			myMsg msg; // we send a message to a worker
+			msg.type = 1;
+			msg.offset = index;
+			sendMessage(&msg);
+		}
+		signal(0);
+		
 		for(int i = beginOffset; i < C; ++i){
 			int offset;
 			readMessage(2, &offset);
@@ -158,21 +221,21 @@ void masterProcess(int P, int C, int p, int m){
 			}
 			if(TableScores[offset] == 0.0){
 				Offsets->stop = 1;
-				for(size_t i = 0; i < P; ++i){
+				for(size_t j = 0; j < P; ++j){
 					myMsg msg;
 					msg.type = 1; // the offset doesn't matter
 					sendMessage(&msg);
 				}
 				printf("One of the Creatures was able to reach the goal tile\n");
 				printf("All you can do now is watch his journey (B) or quit (Q)\n");
+				destroyMaxHeap(heap);
 				signal(2); // we have to signal we closed
 				return;
 			}
-			// sort the new element
+			insertIndex(offset, heap, TableScores); // we insert the index in the heap
 		}
-		wait(0); // we could destroy the creature that was best at a moment
-		beginOffset = C * p / 100;
-		// handles the mutations between beginOffset and C-1
-		signal(0);
 	}
+	destroyMaxHeap(heap);
+	signal(2);
+	return;
 }
