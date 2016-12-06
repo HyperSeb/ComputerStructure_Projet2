@@ -122,9 +122,13 @@ int main(int argc, char* argv[])
 	
 	// Initialisation of the shared memory
 	if(argc == 8){ 
-	randomGrid(M, N); // random generation of the grid and Offsets
+		randomGrid(M, N); // random generation of the grid and Offsets
 	}else{ // we use the provided file
-	GridFromFile(M, N, argv[8]);
+		if (GridFromFile(M, N, argv[8]) == -1){
+			semctl(semId,0,IPC_RMID,0));
+			msgctl(qId, IPC_RMID, 0);
+			exit(EXIT_FAILURE);;
+		}
 	}
 	
 	// semaphore initialisation, 0 handles the "mutual exclusion" between the listener 
