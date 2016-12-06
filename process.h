@@ -6,17 +6,12 @@ struct{
 	int offset;
 } myMsg;
 
-union semun{
-	intval; 
-	structsemid_ds* buf; // buffer for IPC_STAT, IPC_SET 
-	unsignedshort int* array; // arrayfor GETALL, SETALL 
-	structseminfo* __buf; // buffer for IPC_INFO 
-};
-
 struct bestBegEnd {
 	int best; // offset of the best creature
 	size_t begin; // offset of the begin, we only need 1 value since we use a 1D table to represent a matrix
 	size_t end; // offset of the end
+	int stop; //stop is equal to 0 if the program can run, to 1 if the master and worker process must close
+	// (not the listener) and to 2 if the programm must close
 };
 
 /* a process which goal is to listen to the user commands, to print the journey 
