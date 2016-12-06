@@ -8,7 +8,7 @@ int ind(i,j,width){
 
 void randomGrid(unsigned int M, unsigned int N){
 	for(size_t k = 0; k < N*M; ++k){
-			Grid[k] = (rand()%3) == 0; // one position in 3 is a tile
+			Grid[k] = (rand()%3) == 0; // one position in 3 is an obstacle
 		}
 		// the borders have to be Tiles
 		// first and last column
