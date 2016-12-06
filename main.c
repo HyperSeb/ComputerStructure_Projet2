@@ -44,6 +44,9 @@ static void* getSharedMemory(int index, key_t key, size_t size) {
 		fprintf(stderr, "shmat\n");
 		exit(EXIT_FAILURE);
 	}
+	//the shared memory will only be closed when all the realted 
+	//will be closed, so we can flag it to be closed now
+	shmctl(memId[index], IPC_RMID, 0);
 	return ptr;
 }
 
@@ -71,7 +74,14 @@ int main(int argc, char* argv[])
 	p = getArgumentInInterval(argv, 5, 20, 80),
 	m = getArgumentInInterval(argv, 6, 1, 10),
 	T = getArgumentInInterval(argv, 7, 5, 20);
-		
+	
+	// if we randomly generate the grid, we have to increase the size of M and N by 1
+	// and to genrerate walls on the outer border
+	if(argc == 8){
+		++M;
+		++N;
+	}
+	
 	// shared memory management
 	key_t key1, key2, key3, key4, keysem, keyq;
 	pid_t pid;
@@ -90,8 +100,8 @@ int main(int argc, char* argv[])
 	Grid = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
 	
 	// creating the semaphore array
-	printf("Attempting to create new semaphoreset with 2 members\n");
-	if((semId= semget(keysem, 2, IPC_CREAT|IPC_EXCL|0666)) == -1){
+	printf("Attempting to create new semaphoreset with 3 members\n");
+	if((semId= semget(keysem, 3, IPC_CREAT|IPC_EXCL|0666)) == -1){
 		fprintf(stderr, "Semaphore set already exists\n");
 		exit(1);
 	}
@@ -100,6 +110,7 @@ int main(int argc, char* argv[])
 	printf("Attempting to create new message queue\n");
 	if((qId = msgget(keyq, IPC_CREAT|IPC_EXCL|0666)) == -1){
 		fprintf(stderr, "message queue already exists\n");
+		semctl(semId,0,IPC_RMID,0)); // we "free" the semaphores
 		exit(1);
 	}
 	
@@ -112,10 +123,12 @@ int main(int argc, char* argv[])
 	
 	// semaphore initialisation, 0 handles the "mutual exclusion" between the listener 
 	// and the master, 1 handles the number of generation we still have to create
+	// 2 is used to count the number of processes that have ended
 	semopts.val = 1;
 	semctl(semId, 0, SETVAL, semopts);
 	semopts.val = 0;
 	semctl(semId, 1, SETVAL, semopts);
+	semctl(semId, 2, SETVAL, semopts);
 	
 	
 	// Creating the worker and listener processes, all of them will end on exit(0),
