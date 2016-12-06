@@ -13,6 +13,8 @@ so N and M must have been incremented in the main function
 void randomGrid(unsigned int M, unsigned int N);
 
 /* generates a grid of height M and width N from a file named "name"
+checks if there is a border of tiles and if there is no tile over the
+begin/end flag
 return -1 if an error occured
 */
 int GridFromFile(unsigned int M, unsigned int N, char* name);
