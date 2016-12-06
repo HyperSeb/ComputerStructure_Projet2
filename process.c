@@ -110,7 +110,7 @@ void listenerProcess(int M, int N, int P, int T){
 			printf("invalid command \n");
 		}
 	}
-	for(int i = 0; i < P+1; ++i){  // we wait untill all processes are closed
+	for(int i = 0; i < P+1; ++i){  // we wait untill master + all worker processes are closed
 		wait(2);
 	}
 	// delete the semaphore/message queue, the shared memory has already been flagged for deletion
@@ -123,7 +123,7 @@ void workerProcess(int M, int N, int T){
 	int offset;
 	while(stop == 0){
 		readMessage(1, &offset);
-		if (stop != 0){
+		if (Offsets->stop != 0){
 			break;
 		}
 		computeScore(M, N, T, offset);
@@ -141,6 +141,9 @@ void masterProcess(int P, int C, int p, int m){
 	// creating the heap
 	while(true){
 		wait(1);
+		if(Offsets->stop == 2){
+			break;
+		}
 		for(int i = beginOffset; i < C; ++i){
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
@@ -150,10 +153,19 @@ void masterProcess(int P, int C, int p, int m){
 		for(int i = beginOffset; i < C; ++i){
 			int offset;
 			readMessage(2, &offset);
-			if(TableScores[offset] == 0.0){ 
-				msgctl(qId, IPC_RMID, 0); // we need to close the worker processes
-				printf("One of the processes was able to reach the goal tile\n");
+			if(offset == -1){
+				break;
+			}
+			if(TableScores[offset] == 0.0){
+				Offsets->stop = 1;
+				for(size_t i = 0; i < P; ++i){
+					myMsg msg;
+					msg.type = 1; // the offset doesn't matter
+					sendMessage(&msg);
+				}
+				printf("One of the Creatures was able to reach the goal tile\n");
 				printf("All you can do now is watch his journey (B) or quit (Q)\n");
+				signal(2); // we have to signal we closed
 				return;
 			}
 			// sort the new element
