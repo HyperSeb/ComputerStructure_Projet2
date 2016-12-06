@@ -11,6 +11,12 @@
 #include "gridHandler.h"
 #include "process.h"
 
+union semun{
+	intval; 
+	structsemid_ds* buf; // buffer for IPC_STAT, IPC_SET 
+	unsignedshort int* array; // arrayfor GETALL, SETALL 
+	structseminfo* __buf; // buffer for IPC_INFO 
+};
 
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
 	int value = atoi(argv[index]);
