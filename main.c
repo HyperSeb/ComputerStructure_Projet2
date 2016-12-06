@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 	printf("Attempting to create new semaphoreset with 3 members\n");
 	if((semId= semget(keysem, 3, IPC_CREAT|IPC_EXCL|0666)) == -1){
 		fprintf(stderr, "Semaphore set already exists\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	// creating the queue
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
 	if((qId = msgget(keyq, IPC_CREAT|IPC_EXCL|0666)) == -1){
 		fprintf(stderr, "message queue already exists\n");
 		semctl(semId,0,IPC_RMID,0)); // we "free" the semaphores
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	
 	// Initialisation of the shared memory
@@ -152,5 +152,5 @@ int main(int argc, char* argv[])
 		/*test for error*/
 	}
 	masterProcess(P, C, p, m);
-	exit(0)
+	exit(EXIT_SUCCESS)
 }
