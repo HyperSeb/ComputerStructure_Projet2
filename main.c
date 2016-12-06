@@ -151,6 +151,6 @@ int main(int argc, char* argv[])
 		}
 		/*test for error*/
 	}
-	masterProcess(P, C, p, m);
+	masterProcess(P, C, p, m, T);
 	exit(EXIT_SUCCESS)
 }
