@@ -55,17 +55,17 @@ void listenerProcess(int M, int N, int P, int T){
 		unsigned int number = 0;
 		scanf(%c, &tmp);
 		switch (tmp) {
-		case 'G' :
-			if (Offsets->stop != 1){
-				signal(1);
-			}
+		// we do the signal(s) if the user typed 'G' or 'M' even if Offsets->stop == 1 
+		// since a signal is an atomical operation and it won't generate errors (it's just useless)
+		case 'G' : 
+			signal(1);
 			break;
 		case 'M' :
-			if (Offsets->stop != 1){
-			scanf(%ud, &number);
-			for(unsigned int i = 0; i < number; i++){
-				signal(1);
-			}
+			if(scanf(%ud, &number) != -1){
+				for(unsigned int i = 0; i < number; i++){
+					signal(1);
+			}else{
+					printf("your should type a number after 'M'\n");
 			break;
 		case 'B' :
 			wait(0);
@@ -100,11 +100,11 @@ void listenerProcess(int M, int N, int P, int T){
 				Offsets->stop = 2;
 			}
 			break;
-		
 		default: 
 			printf("invalid command \n");
 		}
 	}
+				
 	for(int i = 0; i < P+1; ++i){  // we wait untill master + all worker processes are closed
 		wait(2);
 	}
@@ -165,9 +165,10 @@ void masterProcess(int P, int C, int p, int m, int T){
 	if(Offsets->stop == 2){
 		destroyMaxHeap(heap);
 		signal(2);
+		return;
 	}
 	for(int i = 0; i < C; ++i){
-			createCreature(i, int T);
+			createCreature(i, T);
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
 			msg.offset = i;
@@ -177,11 +178,14 @@ void masterProcess(int P, int C, int p, int m, int T){
 		int offset;
 		readMessage(2, &offset);
 		if(offset == -1){
-			break;
+			destroyMaxHeap(heap);
+			signal(2);
+			return;
 		}
 		if(TableScores[offset] == 0.0){
 			Offsets->stop = 1;
-			for(size_t j = 0; j < P; ++j){
+			for(size_t j = 0; j < P; ++j){ // fake messages to be sure no worker 
+				// is waiting for a message
 				myMsg msg;
 				msg.type = 1; // the offset doesn't matter
 				sendMessage(&msg);
