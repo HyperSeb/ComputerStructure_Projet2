@@ -10,7 +10,7 @@
 #include "gridHandler.h" //in order to acces the "ind" function
 #include "PriorityQueue.h"
 
-static void wait(int offset){
+static void wait(int offset){ // we create this function for readability
 	struct sembuf buf = { offset, -1, 0};
 	if((semop(semId, &buf, 1)) == -1){
 		fprintf(stderr, "Wait failed\n");
@@ -18,8 +18,8 @@ static void wait(int offset){
 	}
 }
 
-static void signal(int offset){
-	struct sembuf buf = { offset, 1,0};
+static void signal(int offset, int value){ // we will need to signal more than once sometimes
+	struct sembuf buf = { offset, value,0};
 	if((semop(semId, &buf, 1)) == -1){
 		fprintf(stderr, "Signal failed\n");
 		exit(EXIT_FAILURE);
@@ -58,14 +58,13 @@ void listenerProcess(int M, int N, int P, int T){
 		// we do the signal(s) if the user typed 'G' or 'M' even if Offsets->stop == 1 
 		// since a signal is an atomical operation and it won't generate errors (it's just useless)
 		case 'G' : 
-			signal(1);
+			signal(1,1);
 			break;
 		case 'M' :
 			if(scanf(%ud, &number) != -1){
-				for(unsigned int i = 0; i < number; i++){
-					signal(1);
+				signal(1,number);
 			}else{
-					printf("your should type a number after 'M'\n");
+				printf("your should type a number after 'M'\n");
 			break;
 		case 'B' :
 			wait(0);
@@ -78,7 +77,7 @@ void listenerProcess(int M, int N, int P, int T){
 			for(int j = 0; j < T; ++j){
 				bestCreature[j] = TableGenes[ind(best,j,T)];
 			}
-			signal(0);
+			signal(0,1);
 			showBest(M, N, bestCreature, T);
 			break;
 		case 'Q' :
@@ -91,7 +90,7 @@ void listenerProcess(int M, int N, int P, int T){
 					sendMessage(&msg);
 				}
 				// the master can be waiting for a new generation or a message
-				signal(1); // we tell him to stop to wait (and to close)
+				signal(1,1); // we tell him to stop to wait (and to close)
 				myMsg msg; // we send a close message to the master
 				msg.type = 2;
 				msg.offset = -1;
@@ -132,7 +131,7 @@ void workerProcess(int M, int N, int T){
 		msg.offset = offset;
 		sendMessage(&msg);
 	}
-	signal(2); // signals we closed
+	signal(2,1); // signals we closed
 	exit(EXIT_SUCCESS);
 }
 
@@ -164,7 +163,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 	wait(1);
 	if(Offsets->stop == 2){
 		destroyMaxHeap(heap);
-		signal(2);
+		signal(2,1);
 		return;
 	}
 	for(int i = 0; i < C; ++i){
@@ -179,7 +178,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 		readMessage(2, &offset);
 		if(offset == -1){
 			destroyMaxHeap(heap);
-			signal(2);
+			signal(2,1);
 			return;
 		}
 		if(TableScores[offset] == 0.0){
@@ -193,7 +192,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 			printf("One of the Creatures was able to reach the goal tile\n");
 			printf("All you can do now is watch his journey (B) or quit (Q)\n");
 			destroyMaxHeap(heap);
-			signal(2); // we have to signal we closed
+			signal(2,1); // we have to signal we closed
 			return;
 		}
 		insertIndex(offset, heap, TableScores); // we insert the index in the heap
@@ -215,7 +214,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 			msg.offset = index;
 			sendMessage(&msg);
 		}
-		signal(0);
+		signal(0,1);
 		
 		for(int i = beginOffset; i < C; ++i){
 			int offset;
@@ -233,13 +232,13 @@ void masterProcess(int P, int C, int p, int m, int T){
 				printf("One of the Creatures was able to reach the goal tile\n");
 				printf("All you can do now is watch his journey (B) or quit (Q)\n");
 				destroyMaxHeap(heap);
-				signal(2); // we have to signal we closed
+				signal(2,1); // we have to signal we closed
 				return;
 			}
 			insertIndex(offset, heap, TableScores); // we insert the index in the heap
 		}
 	}
 	destroyMaxHeap(heap);
-	signal(2);
+	signal(2,1);
 	return;
 }
