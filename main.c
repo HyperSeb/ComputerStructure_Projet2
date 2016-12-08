@@ -131,8 +131,8 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	// semaphore initialisation, 0 handles the "mutual exclusion" between the listener 
-	// and the master, 1 handles the number of generation we still have to create
+	// semaphore initialisation, 0 handles the "mutual exclusion" of the best index 
+	// in memory 1 handles the number of generation we still have to create
 	// 2 is used to count the number of processes that have ended
 	semopts.val = 1;
 	semctl(semId, 0, SETVAL, semopts);
