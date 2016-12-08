@@ -145,11 +145,11 @@ int main(int argc, char* argv[])
 	// Creating the worker and listener processes, all of them will end on exit(0),
 	// thus we don't need to take care of what happens after the call to the process function
 	int pid = 0;
-	pId = fork();
-	if (pId == 0){ // if we are the listener process
+	pid = fork();
+	if (pid == 0){ // if we are the listener process
 		listenerProcess(M, N, P, T);
 	}
-	for(size_t i = 0; i < P; ++i){
+	for(int i = 0; i < P; ++i){
 		pid = fork();
 		if(pid == 0){
 			workerProcess(M, N, T);
