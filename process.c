@@ -113,9 +113,10 @@ void listenerProcess(int M, int N, int P, int T){
 	exit(EXIT_SUCCES);
 }
 
-// computes the score of the creature and possibly replace the best creature's index
+// computes the score of the creature
 static void computeScore(int M, int N, int T, int offset){
 	// c'est pas cette fonction qui gère le cas où on aurait un bestScore == 0
+	// ne gere pas non plus le cas ou on changerait le meilleur
 }
 	
 void workerProcess(int M, int N, int T){
@@ -127,7 +128,7 @@ void workerProcess(int M, int N, int T){
 		}
 		computeScore(M, N, T, offset);
 		wait(0); // we may modify the best creature's offset
-		if(TableScores[Offsets->best] < TableScores[offset]){
+		if(TableScores[Offsets->best] > TableScores[offset]){
 			Offsets->best = offset;
 		}
 		signal(0,1);
