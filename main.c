@@ -18,6 +18,16 @@ union semun{
 	structseminfo* __buf; // buffer for IPC_INFO 
 };
 
+// global variables
+int qId;
+int semId;
+int memId[4];
+bestBegEnd* Offsets;
+double* TableScores;
+int* TableGenes; 
+bool* Grid;
+
+
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
 	int value = atoi(argv[index]);
 	if (lowerBound > value || value > upperBound) {
@@ -55,15 +65,6 @@ static void* getSharedMemory(int index, key_t key, size_t size) {
 	shmctl(memId[index], IPC_RMID, 0);
 	return ptr;
 }
-
-// global variables
-int qId;
-int semId;
-int memId[4];
-bestBegEnd* Offsets;
-double* TableScores;
-int* TableGenes; 
-bool* Grid;
 
 int main(int argc, char* argv[])
 {
