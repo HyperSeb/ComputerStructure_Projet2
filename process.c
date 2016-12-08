@@ -126,6 +126,11 @@ void workerProcess(int M, int N, int T){
 			break;
 		}
 		computeScore(M, N, T, offset);
+		wait(0); // we may modify the best creature's offset
+		if(TableScores[Offsets->best] < TableScores[offset]){
+			Offsets->best = offset;
+		}
+		signal(0,1);
 		myMsg msg; // tells the master the math is done
 		msg.type = 2;
 		msg.offset = offset;
