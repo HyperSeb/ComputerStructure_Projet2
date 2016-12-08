@@ -211,7 +211,6 @@ void masterProcess(int P, int C, int p, int m, int T){
 			break;
 		}
 		
-		wait(0); // we could destroy the creature that was best at a moment
 		for(int i = beginOffset; i < C; ++i){
 			index = extractIndexForMax(heap, TableScores);
 			modifyCreature(index, int p, int T);
@@ -220,7 +219,6 @@ void masterProcess(int P, int C, int p, int m, int T){
 			msg.offset = index;
 			sendMessage(&msg);
 		}
-		signal(0,1);
 		
 		for(int i = beginOffset; i < C; ++i){
 			int offset;
