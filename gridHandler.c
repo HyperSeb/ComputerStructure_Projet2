@@ -49,10 +49,12 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	//begin tile
 	if(fscanf(gridFile, "%d %d", &tmpX, &tmpY) == -1){
 		fprintf(stderr, "unable to read the starting position present in file \n");
+		fclose(gridFile);
 		return -1;
 	}
 	if(tmpX >= (N-2) || tmpX <= 0 || tmpY >= (M-2) || tmpY <= 0){
 		fprintf(stderr, "invalid starting position present in file \n");
+		fclose(gridFile);
 		return -1;
 	}
 	tmpI = M - 1 - tmpY;
@@ -61,10 +63,12 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	//end tile
 	if(fscanf(gridFile, "%d %d", &tmpX, &tmpY) == -1){
 		fprintf(stderr, "unable to read the starting position present in file \n");
+		fclose(gridFile);
 		return -1;
 	}
 	if(tmpX >= (N-2) || tmpX <= 0 || tmpY >= (M-2) || tmpY <= 0){
 		fprintf(stderr, "invalid goal position present in file \n");
+		fclose(gridFile);
 		return -1;
 	}
 	tmpI = M - 1 - tmpY;
@@ -77,6 +81,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	while(fscanf(gridFile, "%d %d", &tmpX, &tmpY) != -1){
 		if(tmpX >= (N-1) || tmpX < 0 || tmpY >= (M-1) || tmpY < 0){
 			fprintf(stderr, "invalid tile position present in file \n");
+			fclose(gridFile);
 			return -1;
 		}
 		tmpI = M - 1 - tmpY;
@@ -88,6 +93,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	for(size_t i = 0; i < M; ++i){
 		if( grid[ind(i,0,N)] == false || grid[ind(i,N-1,N)] == true){
 			fprintf(stderr, "missing border tile at line %d", i);
+			fclose(gridFile);
 			return -1;
 		}
 	}
@@ -95,6 +101,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	for(size_t j = 1; j < N-1; ++j){
 		if(grid[ind(0,j,N)] == false || grid[ind(M-1,j,N)] == false){
 			fprintf(stderr, "missing border tile at line %d", i);
+			fclose(gridFile);
 			return -1;
 		}
 	}
@@ -102,6 +109,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	// checks if there is a tile on the stating/ending position
 	if(grid[Offsets->begin] == true || grid[Offsets->end] == true){
 		fprintf(stderr, "there is a tile over the begin/end position");
+		fclose(gridFile);
 		return -1;
 	}
 	sharedStruct->best = -1;
