@@ -1,5 +1,9 @@
-#include<stdlib.h>
-#include<stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+// the value representing an obstacle in the grid
+const bool obstacle = true;
 
 /* turns the index of an element in a matrix of given width
 into the index of the same element in a table representing the matrix
