@@ -68,7 +68,7 @@ void listenerProcess(int M, int N, int P, int T){
 			break;
 		case 'B' :
 			wait(0);
-			best = Offsets->best;
+			best = sharedStruct->best;
 			if(best == -1){
 				printf("we haven't evaluated any creatures yet\n")
 			}
@@ -81,8 +81,8 @@ void listenerProcess(int M, int N, int P, int T){
 			showBest(M, N, bestCreature, T);
 			break;
 		case 'Q' :
-			if (Offsets->stop == 0){ // we have to close workers and master process
-				Offsets->stop = 2;
+			if (sharedStruct->stop == 0){ // we have to close workers and master process
+				sharedStruct->stop = 2;
 				// all the workers processes will now close as soon as they get a message
 				for(size_t i = 0; i < P; ++i){
 					myMsg msg;
@@ -96,7 +96,7 @@ void listenerProcess(int M, int N, int P, int T){
 				msg.offset = -1;
 				sendMessage(&msg);
 			}else{
-				Offsets->stop = 2;
+				sharedStruct->stop = 2;
 			}
 			break;
 		default: 
@@ -123,13 +123,13 @@ void workerProcess(int M, int N, int T){
 	int offset;
 	while(stop == 0){
 		readMessage(1, &offset);
-		if (Offsets->stop != 0){
+		if (sharedStruct->stop != 0){
 			break;
 		}
 		computeScore(M, N, T, offset);
 		wait(0); // we may modify the best creature's offset
-		if(TableScores[Offsets->best] > TableScores[offset]){
-			Offsets->best = offset;
+		if(TableScores[sharedStruct->best] > TableScores[offset]){
+			sharedStruct->best = offset;
 		}
 		signal(0,1);
 		myMsg msg; // tells the master the math is done
@@ -145,12 +145,12 @@ void workerProcess(int M, int N, int T){
 static void modifyCreature(int index, int p, int T){
 	for(int j = 0; j < T; ++j){
 		if((rand%99) < p){ // if the move mutates
-			int prev = TableGenes[ind(index,j,T)];
+			int prev = tableGenes[ind(index,j,T)];
 			int new = rand()%8;
 			while(prev == new){
 				new = rand%8;
 			}
-			TableGenes[ind(index,j,T)] = new;
+			tableGenes[ind(index,j,T)] = new;
 		}
 	}
 }
@@ -158,7 +158,7 @@ static void modifyCreature(int index, int p, int T){
 // creates a nex creature at the index
 static void createCreature(int index, int T){
 	for(int j = 0; j < T; ++j){
-		TableGenes[ind(index,j,T)] = rand()%8;
+		tableGenes[ind(index,j,T)] = rand()%8;
 	}
 }
 
@@ -167,7 +167,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 	
 	// first generation
 	wait(1);
-	if(Offsets->stop == 2){
+	if(sharedStruct->stop == 2){
 		destroyMaxHeap(heap);
 		signal(2,1);
 		return;
@@ -187,8 +187,8 @@ void masterProcess(int P, int C, int p, int m, int T){
 			signal(2,1);
 			return;
 		}
-		if(TableScores[offset] == 0.0){
-			Offsets->stop = 1;
+		if(tableScores[offset] == 0.0){
+			sharedStruct->stop = 1;
 			for(size_t j = 0; j < P; ++j){ // fake messages to be sure no worker 
 				// is waiting for a message
 				myMsg msg;
@@ -201,18 +201,18 @@ void masterProcess(int P, int C, int p, int m, int T){
 			signal(2,1); // we have to signal we closed
 			return;
 		}
-		insertIndex(offset, heap, TableScores); // we insert the index in the heap
+		insertIndex(offset, heap, tableScores); // we insert the index in the heap
 	}
 	
 	int beginOffset = C * p / 100;
-	while(Offsets->stop != 2){
+	while(sharedStruct->stop != 2){
 		wait(1);
-		if(Offsets->stop == 2){
+		if(sharedStruct->stop == 2){
 			break;
 		}
 		
 		for(int i = beginOffset; i < C; ++i){
-			index = extractIndexForMax(heap, TableScores);
+			index = extractIndexForMax(heap, tableScores);
 			modifyCreature(index, int p, int T);
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
@@ -226,8 +226,8 @@ void masterProcess(int P, int C, int p, int m, int T){
 			if(offset == -1){
 				break;
 			}
-			if(TableScores[offset] == 0.0){
-				Offsets->stop = 1;
+			if(tableScores[offset] == 0.0){
+				sharedStruct->stop = 1;
 				for(size_t j = 0; j < P; ++j){
 					myMsg msg;
 					msg.type = 1; // the offset doesn't matter
@@ -239,7 +239,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 				signal(2,1); // we have to signal we closed
 				return;
 			}
-			insertIndex(offset, heap, TableScores); // we insert the index in the heap
+			insertIndex(offset, heap, tableScores); // we insert the index in the heap
 		}
 	}
 	destroyMaxHeap(heap);
