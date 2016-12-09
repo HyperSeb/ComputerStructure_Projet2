@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 	keysem = ftok(".", 'S');
 	keyq = ftok(".", 'Q');
 	
-	sharedStructure = (bestBegEnd*) getSharedMemory(1, key1, sizeof(bestBegEnd));
+	sharedStruct = (bestBegEnd*) getSharedMemory(1, key1, sizeof(bestBegEnd));
 	tableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
 	tableGenes = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
 	grid = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
