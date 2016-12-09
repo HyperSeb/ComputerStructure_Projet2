@@ -8,24 +8,24 @@ int ind(i,j,width){
 
 void randomGrid(unsigned int M, unsigned int N){
 	for(size_t k = 0; k < N*M; ++k){
-		grid[k] = (rand()%3) == 0; // one position in 3 is an obstacle
+		grid[k] = (rand()%3) == 0 ? obstacle : !obstacle; // one position in 3 is an obstacle
 	}
 	// the borders have to be Tiles
 	// first and last column
 	for(size_t i = 0; i < M; ++i){
-		grid[ind(i,0,N)] = true;
-		grid[ind(i,N-1,N)] = true;
+		grid[ind(i,0,N)] = obstacle;
+		grid[ind(i,N-1,N)] = obstacle;
 	}
 	// first and last line
 	for(size_t j = 1; j < N-1; ++j){
-		grid[ind(0,j,N)] = true;
-		grid[ind(M-1,j,N)] = true;
+		grid[ind(0,j,N)] = obstacle;
+		grid[ind(M-1,j,N)] = obstacle;
 	}
 	// positions of the Begin and End
 	size_t i1,j2, i2, j2;
 	i1 = rand()%(M-2)+1;
 	j2 = rand()%(N-2)+1;
-	grid[ind(i1,j1,N)] = false;
+	grid[ind(i1,j1,N)] = !obstacle;
 	sharedStruct->begin = ind(i1,j1,N);
 	i2 = rand()%(M-2)+1;
 	j2 = rand()%(N-2)+1;
@@ -33,7 +33,7 @@ void randomGrid(unsigned int M, unsigned int N){
 		i2 = rand()%(M-2)+1;
 		j2 = rand()%(N-2)+1;
 	}
-	grid[ind(i2,j2,N)] = false;
+	grid[ind(i2,j2,N)] = !obstacle;
 	sharedStruct->end = ind(i1,j1,N);
 	sharedStruct->best = -1;
 	sharedStruct->stop = 0;
@@ -76,7 +76,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	
 	// obstacles
 	for(size_t k = 0; k < N*M; ++k){
-		grid[k] = false;
+		grid[k] = !obstacle;
 	}
 	while(fscanf(gridFile, "%d %d", &tmpX, &tmpY) != -1){
 		if(tmpX >= (N-1) || tmpX < 0 || tmpY >= (M-1) || tmpY < 0){
@@ -85,13 +85,13 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 			return -1;
 		}
 		tmpI = M - 1 - tmpY;
-		grid[ind(tmpI, tmpX, N)] = true;
+		grid[ind(tmpI, tmpX, N)] = obstacle;
 	}
 	
 	// checks we have an outer wall of tiles
 	// first and last column
 	for(size_t i = 0; i < M; ++i){
-		if( grid[ind(i,0,N)] == false || grid[ind(i,N-1,N)] == true){
+		if( grid[ind(i,0,N)] == !obstacle || grid[ind(i,N-1,N)] == !obstacle){
 			fprintf(stderr, "missing border tile at line %d", i);
 			fclose(gridFile);
 			return -1;
@@ -99,7 +99,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	}
 	// first and last line
 	for(size_t j = 1; j < N-1; ++j){
-		if(grid[ind(0,j,N)] == false || grid[ind(M-1,j,N)] == false){
+		if(grid[ind(0,j,N)] == !obstacle || grid[ind(M-1,j,N)] == !obstacle){
 			fprintf(stderr, "missing border tile at line %d", i);
 			fclose(gridFile);
 			return -1;
@@ -107,7 +107,7 @@ int gridFromFile(unsigned int M, unsigned int N, char* name){
 	}
 	
 	// checks if there is a tile on the stating/ending position
-	if(grid[Offsets->begin] == true || grid[Offsets->end] == true){
+	if(grid[Offsets->begin] == obstacle || grid[Offsets->end] == obstacle){
 		fprintf(stderr, "there is a tile over the begin/end position");
 		fclose(gridFile);
 		return -1;
