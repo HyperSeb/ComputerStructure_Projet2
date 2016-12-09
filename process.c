@@ -65,6 +65,7 @@ void listenerProcess(int M, int N, int P, int T){
 				signal(1,number);
 			}else{
 				printf("your should type a number after 'M'\n");
+			}
 			break;
 		case 'B' :
 			wait(0);
