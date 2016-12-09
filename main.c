@@ -22,10 +22,10 @@ union semun{
 int qId;
 int semId;
 int memId[4];
-bestBegEnd* Offsets;
-double* TableScores;
-int* TableGenes; 
-bool* Grid;
+bestBegEnd* sharedStruct;
+double* tableScores;
+int* tableGenes; 
+bool* grid;
 
 
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
@@ -101,10 +101,10 @@ int main(int argc, char* argv[])
 	keysem = ftok(".", 'S');
 	keyq = ftok(".", 'Q');
 	
-	Offsets = (bestBegEnd*) getSharedMemory(1, key1, sizeof(bestBegEnd));
-	TableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
-	TableGenes = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
-	Grid = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
+	sharedStructure = (bestBegEnd*) getSharedMemory(1, key1, sizeof(bestBegEnd));
+	tableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
+	tableGenes = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
+	grid = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
 	
 	// creating the semaphore array
 	printf("Attempting to create new semaphoreset with 3 members\n");
