@@ -152,8 +152,8 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves){
 			wait(0);
 			best = sharedStruct->best;
 			if(best == -1){
-				printf("I'm sorry Dave, I'm afraid I can't do that\n");
 				signal(0,1);
+				printf("I'm sorry Dave, I'm afraid I can't do that\n");
 			} else {
 				// we copy the table in order not to block the master process during displaying
 				int bestCreature[genomes.genomeLength];
@@ -210,17 +210,17 @@ static double computeScore(Grid grid, int* genome, int genomeLength) {
 static int ind(i,j,width){
 	return width*i + j;
 } 
-void workerProcess(Grid grid, Genomes genomes){
+void workerProcess(Grid grid, Genomes genomes, double* scores){
 	int offset;
 	while(stop == 0){
 		readMessage(1, &offset);
 		if (sharedStruct->stop != 0){
 			break;
 		}
-		TableScores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomeLength);
+		scores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomeLength);
 		
 		wait(0); // we may modify the best creature's offset
-		if(TableScores[sharedStruct->best] > TableScores[offset]){
+		if(scores[sharedStruct->best] > scores[offset]){
 			sharedStruct->best = offset;
 		}
 		signal(0,1);
@@ -256,14 +256,14 @@ static void createCreature(int* genome, int genomeLength){
 //  0 fine, the heap is full
 // -1 offset == -1
 // -2 best arrives to finish
-static int fillHeapWithWorkersResults(MaxHeap* heap) {
+static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores) {
 	while (!isFull(heap)) {
 		int offset;
 		readMessage(2, &offset);
 		if(offset == -1){
 			return -1;
 		}
-		if(tableScores[offset] == 0.0){
+		if(scores[offset] == 0.0){
 			sharedStruct->stop = 1;
 			for(size_t j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
 				// is waiting for a message
@@ -280,7 +280,7 @@ static int fillHeapWithWorkersResults(MaxHeap* heap) {
 	return 0;
 }
 
-void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes){
+void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes, double* scores){
 	MaxHeap* heap = createMaxHeap((size_t) genomes.numberOfCreatures);
 	
 	// first generation
