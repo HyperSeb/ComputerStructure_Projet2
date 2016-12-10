@@ -22,7 +22,6 @@ union semun{
 int qId;
 int semId;
 BestAndStop* sharedStruct;
-double* tableScores;
 
 
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
@@ -101,9 +100,10 @@ int main(int argc, char* argv[])
     
     Grid grid = {NULL, N, M, {0,0}, {0,0}};
     Genomes genomes = {NULL, C, T};
+    double* scores = NULL;
 
     sharedStruct = (bestBegEnd*) getSharedMemory(1, key1, sizeof(BestAndStop));
-    tableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
+    scores = (double*) getSharedMemory(2, key2, C * sizeof(double));
     genomes.storage = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
     grid.storage = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
     
@@ -156,10 +156,10 @@ int main(int argc, char* argv[])
     for(int i = 0; i < P; ++i){
         pid = fork();
         if(pid == 0){
-            workerProcess(grid, genomes);
+            workerProcess(grid, genomes, scores);
         }
         /*test for error*/
     }
-    masterProcess(P, p, m, genomes);
+    masterProcess(P, p, m, genomes, scores);
     exit(EXIT_SUCCESS);
 }
