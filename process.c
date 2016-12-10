@@ -207,9 +207,6 @@ static double computeScore(Grid grid, int* genome, int genomeLength) {
     return sqrt(dX * dX + dY * dY);
 }
 	
-static int ind(i,j,width){
-	return width*i + j;
-} 
 void workerProcess(Grid grid, Genomes genomes, double* scores){
 	int offset;
 	while(stop == 0){
