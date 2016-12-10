@@ -253,6 +253,33 @@ static void createCreature(int* genome, int genomeLength){
 	}
 }
 
+//  0 fine, the heap is full
+// -1 offset == -1
+// -2 best arrives to finish
+static int fillHeapWithWorkersResults(MaxHeap* heap) {
+	while (!isFull(heap)) {
+		int offset;
+		readMessage(2, &offset);
+		if(offset == -1){
+			return -1;
+		}
+		if(tableScores[offset] == 0.0){
+			sharedStruct->stop = 1;
+			for(size_t j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
+				// is waiting for a message
+				myMsg msg;
+				msg.type = 1; // the offset doesn't matter
+				sendMessage(&msg);
+			}
+			printf("One of the Creatures was able to reach the goal tile\n");
+			printf("All you can do now is watch his journey (B) or quit (Q)\n");
+			return -2;
+		}
+		insertIndex(offset, heap, tableScores); // we insert the index in the heap
+	}
+	return 0;
+}
+
 void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes){
 	MaxHeap* heap = createMaxHeap((size_t) genomes.numberOfCreatures);
 	
@@ -270,29 +297,10 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		msg.offset = i;
 		sendMessage(&msg);
 	}
-	for(int i = 0; i < genomes.numberOfCreature; ++i){
-		int offset;
-		readMessage(2, &offset);
-		if(offset == -1){
-			destroyMaxHeap(heap);
-			signal(2,1);
-			return;
-		}
-		if(tableScores[offset] == 0.0){
-			sharedStruct->stop = 1;
-			for(size_t j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
-				// is waiting for a message
-				myMsg msg;
-				msg.type = 1; // the offset doesn't matter
-				sendMessage(&msg);
-			}
-			printf("One of the Creatures was able to reach the goal tile\n");
-			printf("All you can do now is watch his journey (B) or quit (Q)\n");
-			destroyMaxHeap(heap);
-			signal(2,1); // we have to signal we closed
-			return;
-		}
-		insertIndex(offset, heap, tableScores); // we insert the index in the heap
+	if (fillHeapWithWorkersResults(heap) != 0) {
+		destroyMaxHeap(heap);
+		signal(2,1);
+		return;
 	}
 	
 	int beginOffset = genomes.numberOfCreatures * deletionRate / 100;
@@ -309,26 +317,10 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 			sendMessage(&msg);
 		}
 		
-		for(int i = beginOffset; i < genomes.numberOfCreatures; ++i){
-			int offset;
-			readMessage(2, &offset);
-			if(offset == -1){
-				break;
-			}
-			if(tableScores[offset] == 0.0){
-				sharedStruct->stop = 1;
-				for(size_t j = 0; j < numberOfSlaves; ++j){
-					myMsg msg;
-					msg.type = 1; // the offset doesn't matter
-					sendMessage(&msg);
-				}
-				printf("One of the Creatures was able to reach the goal tile\n");
-				printf("All you can do now is watch his journey (B) or quit (Q)\n");
-				destroyMaxHeap(heap);
-				signal(2,1); // we have to signal we closed
-				return;
-			}
-			insertIndex(offset, heap, tableScores); // we insert the index in the heap
+		if (fillHeapWithWorkersResults(heap) == -2) {
+			destroyMaxHeap(heap);
+			signal(2,1); // we have to signal we closed
+			return;
 		}
 	}
 	destroyMaxHeap(heap);
