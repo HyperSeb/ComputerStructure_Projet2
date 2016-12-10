@@ -21,7 +21,6 @@ union semun{
 // global variables
 int qId;
 int semId;
-int memId[4];
 BestAndStop* sharedStruct;
 double* tableScores;
 int* tableGenes;
@@ -42,18 +41,19 @@ allocating a quantity of memory given by size
 */
 static void* getSharedMemory(int index, key_t key, size_t size) {
     // open the shared memory segment - create if necessary
-    if((memId[index] = shmget(key, size, IPC_CREAT|IPC_EXCL|0666)) == -1){
+    int memId = shmget(key, size, IPC_CREAT|IPC_EXCL|0666);
+    if(memId == -1){
         printf("Shared memory segment %d exists - opening as client\n", index+1);
         
         // segment probably already exists - try as a client
-        if((memId[index] = shmget(key, size, 0)) == -1){
+        if((memId = shmget(key, size, 0)) == -1){
             fprintf(stderr, "shmget\n");
             exit(EXIT_FAILURE);
         }
-    }else{
+    } else {
         printf("Creating shared memory segment %d\n", index+1);
     }
-    void* ptr = shmat(memId[index], 0, 0);
+    void* ptr = shmat(memId, 0, 0);
     // map the shared memory segment into the current process
     if(ptr == (void*)-1){
         fprintf(stderr, "shmat\n");
@@ -61,7 +61,7 @@ static void* getSharedMemory(int index, key_t key, size_t size) {
     }
     //the shared memory will only be closed when all the realted 
     //will be closed, so we can flag it to be closed now
-    shmctl(memId[index], IPC_RMID, 0);
+    shmctl(memId, IPC_RMID, 0);
     return ptr;
 }
 
