@@ -5,20 +5,44 @@
 // the value representing an obstacle in the grid
 const bool obstacle = true;
 
-/* turns the index of an element in a matrix of given width
-into the index of the same element in a table representing the matrix
-*/
-int ind(int i,int j, int width);
+struct Position {
+    int x;
+    int y;
+};
+typedef struct Position Position;
 
-/* generates a random grid of height M and width N 
-(we consider here the outer "walls" to be part of the table)
-so N and M must have been incremented in the main function
+/* check if two positions are the same 
 */
-void randomGrid(unsigned int M, unsigned int N);
+bool equalPos(Position p1, Position p2);
 
-/* generates a grid of height M and width N from a file named "name"
+struct Grid {
+    bool* storage;
+    int width;
+    int height;
+    Position start;
+    Position finish;
+};
+typedef struct Grid Grid;
+
+/* return the element of the grid at the given position
+*/
+bool getInGrid(Grid grid, Position position);
+
+/* return the element of the grid at the given position
+*/
+void setInGrid(Grid grid, Position position, bool value);
+
+/* fill the grid randomly, and set start and finish at random
+*/
+void fillGridRandomly(Grid* grid);
+
+/* fill the grid of the given size with content from a file named "name"
 checks if there is a border of tiles and if there is no tile over the
 begin/end flag
 return -1 if an error occured
 */
-int gridFromFile(unsigned int M, unsigned int N, char* name);
+int fillgridWithFile(Grid* grid, char* name);
+
+/* display the grid on stdout
+*/
+void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex);
