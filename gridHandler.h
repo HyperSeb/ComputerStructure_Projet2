@@ -11,6 +11,10 @@ struct Position {
 };
 typedef struct Position Position;
 
+/* check if two positions are the same 
+*/
+bool equalPos(Position p1, Position p2);
+
 struct Grid {
     bool* storage;
     int width;
