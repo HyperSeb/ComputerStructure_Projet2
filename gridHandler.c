@@ -16,7 +16,7 @@ static bool* ptrInGrid(Grid grid, Position position) {
 
 bool getInGrid(Grid grid, Position position) {
     bool* ptr = ptrInGrid(grid, position);
-	return ptr == NULL ? obstacle : *ptr;
+    return ptr == NULL ? obstacle : *ptr;
 }
 
 void setInGrid(Grid grid, Position position, bool value) {
@@ -136,8 +136,6 @@ int fillgridWithFile(Grid* grid, char* name) {
         fprintf(stderr, "Could not open file \n");
     }
     return result;
-//  sharedStruct->best = -1;
-//  sharedStruct->stop = 0;
 }
 
 void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex) {
