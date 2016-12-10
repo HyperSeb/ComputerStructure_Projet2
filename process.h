@@ -15,7 +15,7 @@ struct BestAndStop {
 
 struct Genomes {
     int* storage;
-    int numberOfCreature;
+    int numberOfCreatures;
     int genomeLength;
 };
 typedef struct Genomes Genomes;
