@@ -50,6 +50,12 @@ int* genomeAtIndex(Genomes genomes, int index) {
 	}
 }
 
+static void copyGenome(int* from, int* to, int genomeLength) {
+	for (int i = 0; i < genomeLength; i++) {
+		to[i] = from[i];
+	}
+}
+
 static Position computeResultOfMove(Grid grid, Position from, int deltaX, int deltaY) {
     // Magic should appear here
     
@@ -151,9 +157,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves){
 			} else {
 				// we copy the table in order not to block the master process during displaying
 				int bestCreature[genomes.genomeLength];
-				for(int j = 0; j < genomes.genomeLength; ++j){
-					bestCreature[j] = genomeAtIndex(genomes, best)[j];
-				}
+				copyGenome(genomeAtIndex(genomes, best), bestCreature, genomes.genomeLength);
 				signal(0,1);
 				showBest(grid, bestCreature, genomeLength);
 			}
