@@ -117,10 +117,10 @@ int fillgridWithFile(Grid* grid, char* name) {
                     	if(getInGrid(*grid, grid->start) != obstacle && getInGrid(*grid, grid->finish) != obstacle) {
                             result = 0;
                         } else {
-                		    fprintf(stderr, "there is a tile over the begin/end position");
+                	        fprintf(stderr, "there is a tile over the begin/end position");
                     	}
                     } else {
-			            fprintf(stderr, "missing border");
+                        fprintf(stderr, "missing border");
                     }
                 } else {
 			        fprintf(stderr, "bad obstacle position \n");
