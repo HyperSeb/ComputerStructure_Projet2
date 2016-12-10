@@ -23,7 +23,6 @@ int qId;
 int semId;
 BestAndStop* sharedStruct;
 double* tableScores;
-int* tableGenes;
 
 
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
