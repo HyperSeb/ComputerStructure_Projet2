@@ -275,7 +275,7 @@ static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores) {
 			printf("All you can do now is watch his journey (B) or quit (Q)\n");
 			return -2;
 		}
-		insertIndex(offset, heap, tableScores); // we insert the index in the heap
+		insertIndex(offset, heap, scores); // we insert the index in the heap
 	}
 	return 0;
 }
@@ -309,7 +309,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		}
 		
 		for(int i = beginOffset; i < genomes.numberOfCreatures; ++i){
-			index = extractIndexForMax(heap, tableScores);
+			index = extractIndexForMax(heap, scores);
 			modifyCreature(mutationRate, genomeAtIndex(genomes, index), genomeLength);
 			myMsg msg = {/*type*/ 1, /*offset*/ index}; // we send a message to a worker
 			sendMessage(&msg);
