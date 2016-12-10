@@ -13,6 +13,17 @@ struct BestAndStop {
     // (not the listener) and to 2 if the programm must close
 };
 
+struct Genomes {
+    int* storage;
+    int numberOfCreature;
+    int genomeLength;
+};
+typedef struct Genomes Genomes;
+
+/* return a pointer to the genome a the creature
+*/
+int* genomeAtIndex(Genomes genomes, int index);
+
 /* a process which goal is to listen to the user commands, to print the journey 
 of the best creature so far and to close the progam
 */
