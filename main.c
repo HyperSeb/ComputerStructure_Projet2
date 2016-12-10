@@ -132,6 +132,9 @@ int main(int argc, char* argv[])
             exit(EXIT_FAILURE);;
         }
     }
+    sharedStruct->best = -1;
+    sharedStruct->stop = 0;
+
     
     // semaphore initialisation, 0 handles the "mutual exclusion" of the best index 
     // in memory 1 handles the number of generation we still have to create
