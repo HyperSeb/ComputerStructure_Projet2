@@ -101,11 +101,12 @@ int main(int argc, char* argv[])
     keyq = ftok(".", 'Q');
     
     Grid grid = {NULL, N, M, {0,0}, {0,0}};
+    Genomes genomes = {NULL, C, T};
 
     sharedStruct = (bestBegEnd*) getSharedMemory(1, key1, sizeof(BestAndStop));
     tableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
-    tableGenes = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
-    grid->storage = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
+    genomes.storage = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
+    grid.storage = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
     
     // creating the semaphore array
     printf("Attempting to create new semaphoreset with 3 members\n");
@@ -151,15 +152,15 @@ int main(int argc, char* argv[])
     int pid = 0;
     pid = fork();
     if (pid == 0){ // if we are the listener process
-        listenerProcess(grid, P, T);
+        listenerProcess(grid, genomes, P);
     }
     for(int i = 0; i < P; ++i){
         pid = fork();
         if(pid == 0){
-            workerProcess(grid, T);
+            workerProcess(grid, genomes);
         }
         /*test for error*/
     }
-    masterProcess(P, C, p, m, T);
+    masterProcess(P, p, m, genomes);
     exit(EXIT_SUCCESS);
 }
