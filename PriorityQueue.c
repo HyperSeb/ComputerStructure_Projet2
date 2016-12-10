@@ -42,14 +42,14 @@ static void maxHeapify(int* indices, size_t i, size_t end, double* array) {
 
 int extractIndexForMax(MaxHeap* heap, double* array) {
     if (heap -> count == 0) {
-        return;
+        return - 1;
     }
     
     swap(&heap->indices[0], &heap->indices[--count]);
     
     maxHeapify(heap -> indices, 0, count, array);
     
-    return heap->indices[count]
+    return heap->indices[count];
 }
 
 static size_t parent(size_t index) {
@@ -68,9 +68,9 @@ bool insertValueIn(int value, MaxHeap* heap, double* array) {
             currentIndex = parentIndex;
             parentIndex = parent(currentIndex);
         }
-        return true
+        return true;
     } else {
-        return false
+        return false;
     }
 }
 
