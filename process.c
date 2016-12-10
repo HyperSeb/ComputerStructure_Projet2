@@ -34,15 +34,80 @@ static void sendMessage(myMsg* msg){
 }
 
 static void readMessage(long type, int* offset){
-    if(msgrcv(qId, offset, sizeof(myMsg) - sizeof(long), type,  0) < 0){
+	if(msgrcv(qId, offset, sizeof(myMsg) - sizeof(long), type,  0) < 0){
 		fprintf(stderr, "reading a message failed\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
+static Position computeResultOfMove(Grid grid, Position from, int deltaX, int deltaY) {
+    // Magic should appear here
+    
+    // Naive (waiting for magic)
+    Position nextPosition = {from.x + deltaX, from.y + deltaY};
+    
+    if (getInGrid(grid, nextPosition) == obstacle) {
+        nextPosition = {from.x, from.y + deltaY};
+        if (getInGrid(grid, nextPosition) == obstacle) {
+            return from;
+        }
+    }
+    
+    return nextPosition;
+}
+
+// return the final position of the creature
+static Position performCreature(Grid grid, int* genome, int genomeLength, bool displayingSteps) {
+    Position currentPosition = grid.start;
+
+    if (displayingSteps) {
+        // display start
+        displayGrid(grid, grid.start, genome, genomeLength, -1);
+    }
+
+    for (int geneIndex = -1; geneIndex < genomeLength; geneIndex++) {
+        int direction = geneIndex == -1 ? -1 : genome[geneIndex];
+        int deltaX, deltaY;
+        
+        switch (direction) {
+                
+#define MOVE(dX, dY, intValue, character) \
+            case intValue:\
+                deltaX = dX;\
+                deltaY = dY;\
+                break;
+#include "move.txt"
+                
+            default:
+                deltaX = 0;
+                deltaY = 0;
+                break;
+        }
+        Position underPosition;
+        do {
+            Position nextPosition = computeResultOfMove(grid, currentPosition, deltaX, deltaY);
+            if (nextPosition.x == currentPosition.x && nextPosition.y == currentPosition.y) {
+                // do we display this one?
+            } else {
+                currentPosition = nextPosition;
+                
+                if (displayingSteps) {
+                    sleep(1);
+                    displayGrid(grid, currentPosition, genome, genomeLength, geneIndex);
+                }
+            }
+            
+            deltaY++;
+            underPosition = {currentPosition.x, currentPosition.y - 1};
+
+        } while (getInGrid(grid, underPosition) != obstacle)
+    }
+    
+    return currentPosition;
+}
 // show the best creature's movements on the terminal
-static void showBest(int M, int N, int* bestCreature, int T){
-	
+static void showBest(Grid grid, int* genome, int genomeLength){
+	performCreature(grid, genome, genomeLength, true);
 }
 
 void listenerProcess(Grid grid, int numberOfSlaves, int genomeLength){
@@ -74,13 +139,13 @@ void listenerProcess(Grid grid, int numberOfSlaves, int genomeLength){
 				printf("I'm sorry Dave, I'm afraid I can't do that\n");
 				signal(0,1);
 			} else {
-				// we copy the table in order not to block the master process during T seconds
+				// we copy the table in order not to block the master process during displaying
 				int bestCreature[genomeLength];
 				for(int j = 0; j < genomeLength; ++j){
 					bestCreature[j] = TableGenes[ind(best,j,T)];
 				}
 				signal(0,1);
-				showBest(M, N, bestCreature, T);
+				showBest(grid, bestCreature, genomeLength);
 			}
 			break;
 		case 'Q' :
@@ -117,9 +182,15 @@ void listenerProcess(Grid grid, int numberOfSlaves, int genomeLength){
 }
 
 // computes the score of the creature
-static void computeScore(Grid grid, int genomeLength, int offset){
+static double computeScore(Grid grid, int* genome, int genomeLength) {
 	// c'est pas cette fonction qui gère le cas où on aurait un bestScore == 0
 	// ne gere pas non plus le cas ou on changerait le meilleur
+    Position finalPosition = performCreature(grid, genome, genomeLength, false);
+    
+    int dX = finalPosition.x - grid.finish.x;
+    int dY = finalPosition.y - grid.finish.y;
+    
+    return sqrt(dX * dX + dY * dY);
 }
 	
 static int ind(i,j,width){
@@ -132,7 +203,8 @@ void workerProcess(Grid grid, int genomeLength){
 		if (sharedStruct->stop != 0){
 			break;
 		}
-		computeScore(grid, genomeLength, offset);
+		TableScores[offset] = computeScore(grid, &TableGenes[ind(offset, 0, genomeLength)], genomeLength);
+		
 		wait(0); // we may modify the best creature's offset
 		if(TableScores[sharedStruct->best] > TableScores[offset]){
 			sharedStruct->best = offset;
