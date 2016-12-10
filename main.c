@@ -22,7 +22,7 @@ union semun{
 int qId;
 int semId;
 int memId[4];
-bestBegEnd* sharedStruct;
+BestAndStop* sharedStruct;
 double* tableScores;
 int* tableGenes;
 
