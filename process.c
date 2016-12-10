@@ -45,7 +45,7 @@ static void showBest(int M, int N, int* bestCreature, int T){
 	
 }
 
-void listenerProcess(int M, int N, int P, int T){
+void listenerProcess(Grid grid, int numberOfSlaves, int genomeLength){
 	printf("type: G to request a new generation\n");
 	printf("      M followed by a number to request that number of generations\n");
 	printf("      B to display the best creature so far\n");
@@ -63,7 +63,7 @@ void listenerProcess(int M, int N, int P, int T){
 		case 'M' :
 			if(scanf(%ud, &number) != -1){
 				signal(1,number);
-			}else{
+			} else {
 				printf("your should type a number after 'M'\n");
 			}
 			break;
@@ -71,21 +71,23 @@ void listenerProcess(int M, int N, int P, int T){
 			wait(0);
 			best = sharedStruct->best;
 			if(best == -1){
-				printf("we haven't evaluated any creatures yet\n")
+				printf("I'm sorry Dave, I'm afraid I can't do that\n");
+				signal(0,1);
+			} else {
+				// we copy the table in order not to block the master process during T seconds
+				int bestCreature[genomeLength];
+				for(int j = 0; j < genomeLength; ++j){
+					bestCreature[j] = TableGenes[ind(best,j,T)];
+				}
+				signal(0,1);
+				showBest(M, N, bestCreature, T);
 			}
-			// we copy the table in order not to block the master process during T seconds
-			int bestCreature[T];
-			for(int j = 0; j < T; ++j){
-				bestCreature[j] = TableGenes[ind(best,j,T)];
-			}
-			signal(0,1);
-			showBest(M, N, bestCreature, T);
 			break;
 		case 'Q' :
 			if (sharedStruct->stop == 0){ // we have to close workers and master process
 				sharedStruct->stop = 2;
 				// all the workers processes will now close as soon as they get a message
-				for(size_t i = 0; i < P; ++i){
+				for(size_t i = 0; i < numberOfSlaves; ++i){
 					myMsg msg;
 					msg.type = 1; // the offset doesn't matter
 					sendMessage(&msg);
@@ -96,7 +98,7 @@ void listenerProcess(int M, int N, int P, int T){
 				msg.type = 2;
 				msg.offset = -1;
 				sendMessage(&msg);
-			}else{
+			} else {
 				sharedStruct->stop = 2;
 			}
 			break;
@@ -105,7 +107,7 @@ void listenerProcess(int M, int N, int P, int T){
 		}
 	}
 				
-	for(int i = 0; i < P+1; ++i){  // we wait untill master + all worker processes are closed
+	for(int i = 0; i < numberOfSlaves+1; ++i){  // we wait untill master + all worker processes are closed
 		wait(2);
 	}
 	// delete the semaphore/message queue, the shared memory has already been flagged for deletion
@@ -115,19 +117,22 @@ void listenerProcess(int M, int N, int P, int T){
 }
 
 // computes the score of the creature
-static void computeScore(int M, int N, int T, int offset){
+static void computeScore(Grid grid, int genomeLength, int offset){
 	// c'est pas cette fonction qui gère le cas où on aurait un bestScore == 0
 	// ne gere pas non plus le cas ou on changerait le meilleur
 }
 	
-void workerProcess(int M, int N, int T){
+static int ind(i,j,width){
+	return width*i + j;
+} 
+void workerProcess(Grid grid, int genomeLength){
 	int offset;
 	while(stop == 0){
 		readMessage(1, &offset);
 		if (sharedStruct->stop != 0){
 			break;
 		}
-		computeScore(M, N, T, offset);
+		computeScore(grid, genomeLength, offset);
 		wait(0); // we may modify the best creature's offset
 		if(TableScores[sharedStruct->best] > TableScores[offset]){
 			sharedStruct->best = offset;
@@ -143,28 +148,28 @@ void workerProcess(int M, int N, int T){
 }
 
 // modifies the genes of the creature number index
-static void modifyCreature(int index, int p, int T){
-	for(int j = 0; j < T; ++j){
-		if((rand%99) < p){ // if the move mutates
-			int prev = tableGenes[ind(index,j,T)];
+static void modifyCreature(int index, int mutationRate, int genomeLength){
+	for(int j = 0; j < genomeLength; ++j){
+		if((rand%99) < mutationRate){ // if the move mutates
+			int prev = tableGenes[ind(index,j,genomeLength)];
 			int new = rand()%8;
 			while(prev == new){
 				new = rand%8;
 			}
-			tableGenes[ind(index,j,T)] = new;
+			tableGenes[ind(index,j,genomeLength)] = new;
 		}
 	}
 }
 
 // creates a nex creature at the index
-static void createCreature(int index, int T){
+static void createCreature(int index, int genomeLength){
 	for(int j = 0; j < T; ++j){
-		tableGenes[ind(index,j,T)] = rand()%8;
+		tableGenes[ind(index,j,genomeLength)] = rand()%8;
 	}
 }
 
-void masterProcess(int P, int C, int p, int m, int T){
-	MaxHeap* heap = createMaxHeap((size_t) C);
+void masterProcess(int numberOfSlaves, int numberOfCreature, int deletionRate, int mutationRate, int genomeLength){
+	MaxHeap* heap = createMaxHeap((size_t) numberOfCreature);
 	
 	// first generation
 	wait(1);
@@ -173,14 +178,14 @@ void masterProcess(int P, int C, int p, int m, int T){
 		signal(2,1);
 		return;
 	}
-	for(int i = 0; i < C; ++i){
-			createCreature(i, T);
+	for(int i = 0; i < numberOfCreature; ++i){
+			createCreature(i, genomeLength);
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
 			msg.offset = i;
 			sendMessage(&msg);
 	}
-	for(int i = 0; i < C; ++i){
+	for(int i = 0; i < numberOfCreature; ++i){
 		int offset;
 		readMessage(2, &offset);
 		if(offset == -1){
@@ -190,7 +195,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 		}
 		if(tableScores[offset] == 0.0){
 			sharedStruct->stop = 1;
-			for(size_t j = 0; j < P; ++j){ // fake messages to be sure no worker 
+			for(size_t j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
 				// is waiting for a message
 				myMsg msg;
 				msg.type = 1; // the offset doesn't matter
@@ -205,23 +210,23 @@ void masterProcess(int P, int C, int p, int m, int T){
 		insertIndex(offset, heap, tableScores); // we insert the index in the heap
 	}
 	
-	int beginOffset = C * p / 100;
+	int beginOffset = numberOfCreature * deletionRate / 100;
 	while(sharedStruct->stop != 2){
 		wait(1);
 		if(sharedStruct->stop == 2){
 			break;
 		}
 		
-		for(int i = beginOffset; i < C; ++i){
+		for(int i = beginOffset; i < numberOfCreature; ++i){
 			index = extractIndexForMax(heap, tableScores);
-			modifyCreature(index, int p, int T);
+			modifyCreature(index, mutationRate, genomeLength);
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
 			msg.offset = index;
 			sendMessage(&msg);
 		}
 		
-		for(int i = beginOffset; i < C; ++i){
+		for(int i = beginOffset; i < numberOfCreature; ++i){
 			int offset;
 			readMessage(2, &offset);
 			if(offset == -1){
@@ -229,7 +234,7 @@ void masterProcess(int P, int C, int p, int m, int T){
 			}
 			if(tableScores[offset] == 0.0){
 				sharedStruct->stop = 1;
-				for(size_t j = 0; j < P; ++j){
+				for(size_t j = 0; j < numberOfSlaves; ++j){
 					myMsg msg;
 					msg.type = 1; // the offset doesn't matter
 					sendMessage(&msg);
