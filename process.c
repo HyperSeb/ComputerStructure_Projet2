@@ -237,8 +237,7 @@ void workerProcess(Grid grid, Genomes genomes){
 static void modifyCreature(int mutationRate, int* genome, int genomeLength){
 	for(int j = 0; j < genomeLength; ++j){
 		if((rand() % 100) < mutationRate){ // if the move mutates
-			int prev = genome[j];
-			int new;
+			int prev = genome[j], new;
 			do {
 				new = rand()%8;
 			} while(prev == new)
@@ -249,7 +248,7 @@ static void modifyCreature(int mutationRate, int* genome, int genomeLength){
 
 // creates a new genome
 static void createCreature(int* genome, int genomeLength){
-	for(int j = 0; j < T; ++j){
+	for(int j = 0; j < genomeLength; ++j){
 		genome[j] = rand()%8;
 	}
 }
@@ -265,11 +264,11 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		return;
 	}
 	for(int i = 0; i < genomes.numberOfCreature; ++i){
-			createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
-			myMsg msg; // we send a message to a worker
-			msg.type = 1;
-			msg.offset = i;
-			sendMessage(&msg);
+		createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
+		myMsg msg; // we send a message to a worker
+		msg.type = 1;
+		msg.offset = i;
+		sendMessage(&msg);
 	}
 	for(int i = 0; i < genomes.numberOfCreature; ++i){
 		int offset;
