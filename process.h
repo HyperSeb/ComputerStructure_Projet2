@@ -32,9 +32,9 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves);
 /* a process which goal is to compute the score of a creature which index is 
 given by the master process through a message queue
 */
-void workerProcess(Grid grid, Genomes genomes);
+void workerProcess(Grid grid, Genomes genomes, double* scores);
 
 /* a process which goal is to handle the generation/classification/mutation of 
 the creatures
 */
-void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes);
+void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes, double* scores);
