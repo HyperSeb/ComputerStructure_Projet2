@@ -292,9 +292,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	}
 	for(int i = 0; i < genomes.numberOfCreature; ++i){
 		createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
-		myMsg msg; // we send a message to a worker
-		msg.type = 1;
-		msg.offset = i;
+		myMsg msg = {/*type*/ 1, /*offset*/ i}; // we send a message to a worker
 		sendMessage(&msg);
 	}
 	if (fillHeapWithWorkersResults(heap) != 0) {
