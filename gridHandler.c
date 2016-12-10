@@ -139,3 +139,75 @@ int fillgridWithFile(Grid* grid, char* name) {
 //  sharedStruct->best = -1;
 //  sharedStruct->stop = 0;
 }
+
+void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex) {
+    // Do we show the genes?
+    
+    // Do we use # or this?
+	
+    static const char face[4] = {0xE2, 0x98, 0xBB, '\0'};
+    static const char start[4] = {'S', '\0'};
+    static const char finish[4] = {'F', '\0'};
+    static const char obstacleCenter[4] = {'X', '\0'};
+    
+    printf("+");
+    for (int j = 0; j < grid.width; j++) {
+        printf("---+");
+    }
+    printf("\n");
+    for (Position p = {0, 0}; p.y < grid.height; p.y++) {
+        printf("|");
+        for (p.x = 0; p.x < grid.width; p.x++) {
+            // ___|
+            printf(" ");
+            if (equalPos(p, creaturePosition)) {
+                printf(face);
+            } else if (equalPos(p, grid.start)) {
+                printf(start);
+            } else if (equalPos(p, grid.finish)) {
+                printf(finish);
+            } else if (getInGrid(grid, p) == obstacle) {
+                printf(obstacleCenter); // distinction between obstacles and free place with obstacles around
+            } else {
+                printf(" ");
+            }
+            printf(" ");
+            
+            Position nextP = {p.x + 1, p.y};
+            
+            if (nextP.x == grid.width) {
+                printf("|");
+            } else if (getInGrid(grid, p) == obstacle || getInGrid(grid, nextP) == obstacle) {
+                printf("|");
+            } else {
+                printf(" ");
+            }
+        }
+        printf("\n");
+        
+        printf("+");
+        for (p.x = 0; p.x < grid.width; p.x++) {
+            Position underP = {p.x, p.y + 1}, nextP = {p.x + 1, p.y}, underNextP = {p.x + 1, p.y + 1};
+            // ---+
+            if (underP.y == grid.height) {
+                printf("---");
+            } else if (getInGrid(grid, p) == obstacle || getInGrid(grid, underP) == obstacle) {
+                printf("---");
+            } else {
+                printf("   ");
+            }
+            
+            if (underP.y == grid.height || nextP.x == grid.width) {
+                printf("+");
+            } else if (getInGrid(grid, p) == obstacle ||
+                       getInGrid(grid, underP) == obstacle ||
+                       getInGrid(grid, nextP) == obstacle ||
+                       getInGrid(grid, underNextP) == obstacle) {
+                printf("+");
+            } else {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+}
