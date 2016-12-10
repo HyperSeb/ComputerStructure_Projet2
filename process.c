@@ -41,6 +41,15 @@ static void readMessage(long type, int* offset){
 	}
 }
 
+int* genomeAtIndex(Genomes genomes, int index) {
+	if (0 <= index && index < genomes.numberOfCreatures) {
+		return genomes.storage + index * genomes.genomeLength;
+	} else {
+		fprintf(stderr, "genomeAtIndex accessed out of the bounds");
+		return NULL;
+	}
+}
+
 static Position computeResultOfMove(Grid grid, Position from, int deltaX, int deltaY) {
     // Magic should appear here
     
@@ -111,7 +120,7 @@ static void showBest(Grid grid, int* genome, int genomeLength){
 	performCreature(grid, genome, genomeLength, true);
 }
 
-void listenerProcess(Grid grid, int numberOfSlaves, int genomeLength){
+void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves){
 	printf("type: G to request a new generation\n");
 	printf("      M followed by a number to request that number of generations\n");
 	printf("      B to display the best creature so far\n");
@@ -141,9 +150,9 @@ void listenerProcess(Grid grid, int numberOfSlaves, int genomeLength){
 				signal(0,1);
 			} else {
 				// we copy the table in order not to block the master process during displaying
-				int bestCreature[genomeLength];
-				for(int j = 0; j < genomeLength; ++j){
-					bestCreature[j] = TableGenes[ind(best,j,T)];
+				int bestCreature[genomes.genomeLength];
+				for(int j = 0; j < genomes.genomeLength; ++j){
+					bestCreature[j] = genomeAtIndex(genomes, best)[j];
 				}
 				signal(0,1);
 				showBest(grid, bestCreature, genomeLength);
@@ -197,14 +206,14 @@ static double computeScore(Grid grid, int* genome, int genomeLength) {
 static int ind(i,j,width){
 	return width*i + j;
 } 
-void workerProcess(Grid grid, int genomeLength){
+void workerProcess(Grid grid, Genomes genomes){
 	int offset;
 	while(stop == 0){
 		readMessage(1, &offset);
 		if (sharedStruct->stop != 0){
 			break;
 		}
-		TableScores[offset] = computeScore(grid, &TableGenes[ind(offset, 0, genomeLength)], genomeLength);
+		TableScores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomeLength);
 		
 		wait(0); // we may modify the best creature's offset
 		if(TableScores[sharedStruct->best] > TableScores[offset]){
@@ -220,29 +229,29 @@ void workerProcess(Grid grid, int genomeLength){
 	exit(EXIT_SUCCESS);
 }
 
-// modifies the genes of the creature number index
-static void modifyCreature(int index, int mutationRate, int genomeLength){
+// modifies the genome
+static void modifyCreature(int mutationRate, int* genome, int genomeLength){
 	for(int j = 0; j < genomeLength; ++j){
-		if((rand%99) < mutationRate){ // if the move mutates
-			int prev = tableGenes[ind(index,j,genomeLength)];
-			int new = rand()%8;
-			while(prev == new){
-				new = rand%8;
-			}
-			tableGenes[ind(index,j,genomeLength)] = new;
+		if((rand() % 100) < mutationRate){ // if the move mutates
+			int prev = genome[j];
+			int new;
+			do {
+				new = rand()%8;
+			} while(prev == new)
+			genome[j] = new;
 		}
 	}
 }
 
-// creates a nex creature at the index
-static void createCreature(int index, int genomeLength){
+// creates a new genome
+static void createCreature(int* genome, int genomeLength){
 	for(int j = 0; j < T; ++j){
-		tableGenes[ind(index,j,genomeLength)] = rand()%8;
+		genome[j] = rand()%8;
 	}
 }
 
-void masterProcess(int numberOfSlaves, int numberOfCreature, int deletionRate, int mutationRate, int genomeLength){
-	MaxHeap* heap = createMaxHeap((size_t) numberOfCreature);
+void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes){
+	MaxHeap* heap = createMaxHeap((size_t) genomes.numberOfCreatures);
 	
 	// first generation
 	wait(1);
@@ -251,14 +260,14 @@ void masterProcess(int numberOfSlaves, int numberOfCreature, int deletionRate, i
 		signal(2,1);
 		return;
 	}
-	for(int i = 0; i < numberOfCreature; ++i){
-			createCreature(i, genomeLength);
+	for(int i = 0; i < genomes.numberOfCreature; ++i){
+			createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
 			myMsg msg; // we send a message to a worker
 			msg.type = 1;
 			msg.offset = i;
 			sendMessage(&msg);
 	}
-	for(int i = 0; i < numberOfCreature; ++i){
+	for(int i = 0; i < genomes.numberOfCreature; ++i){
 		int offset;
 		readMessage(2, &offset);
 		if(offset == -1){
@@ -283,23 +292,21 @@ void masterProcess(int numberOfSlaves, int numberOfCreature, int deletionRate, i
 		insertIndex(offset, heap, tableScores); // we insert the index in the heap
 	}
 	
-	int beginOffset = numberOfCreature * deletionRate / 100;
+	int beginOffset = genomes.numberOfCreatures * deletionRate / 100;
 	while(sharedStruct->stop != 2){
 		wait(1);
 		if(sharedStruct->stop == 2){
 			break;
 		}
 		
-		for(int i = beginOffset; i < numberOfCreature; ++i){
+		for(int i = beginOffset; i < genomes.numberOfCreatures; ++i){
 			index = extractIndexForMax(heap, tableScores);
-			modifyCreature(index, mutationRate, genomeLength);
-			myMsg msg; // we send a message to a worker
-			msg.type = 1;
-			msg.offset = index;
+			modifyCreature(mutationRate, genomeAtIndex(genomes, index), genomeLength);
+			myMsg msg = {/*type*/ 1, /*offset*/ index}; // we send a message to a worker
 			sendMessage(&msg);
 		}
 		
-		for(int i = beginOffset; i < numberOfCreature; ++i){
+		for(int i = beginOffset; i < genomes.numberOfCreatures; ++i){
 			int offset;
 			readMessage(2, &offset);
 			if(offset == -1){
