@@ -1,11 +1,12 @@
-#include<stddef.h>
-#include<stdbool.h>
-#include<time.h>
-#include<sys/types.h>
-#include<sys/ipc.h>
-#include<sys/shm.h>
-#include<sys/sem.h>
-#include<sys/msg.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/msg.h>
+#include <unistd.h>
 #include "process.h"
 #include "gridHandler.h" //in order to acces the "ind" function
 #include "PriorityQueue.h"
