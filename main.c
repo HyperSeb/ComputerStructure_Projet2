@@ -24,8 +24,7 @@ int semId;
 int memId[4];
 bestBegEnd* sharedStruct;
 double* tableScores;
-int* tableGenes; 
-bool* grid;
+int* tableGenes;
 
 
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
@@ -101,10 +100,12 @@ int main(int argc, char* argv[])
     keysem = ftok(".", 'S');
     keyq = ftok(".", 'Q');
     
-    sharedStruct = (bestBegEnd*) getSharedMemory(1, key1, sizeof(bestBegEnd));
+    Grid grid = {NULL, N, M, {0,0}, {0,0}};
+
+    sharedStruct = (bestBegEnd*) getSharedMemory(1, key1, sizeof(BestAndStop));
     tableScores = (double*) getSharedMemory(2, key2, C * sizeof(double));
     tableGenes = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
-    grid = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
+    grid->storage = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
     
     // creating the semaphore array
     printf("Attempting to create new semaphoreset with 3 members\n");
@@ -123,9 +124,9 @@ int main(int argc, char* argv[])
     
     // Initialisation of the shared memory
     if(argc == 8){ 
-        randomGrid(M, N); // random generation of the grid and Offsets
+        randomGrid(&grid); // random generation of the grid and Offsets
     }else{ // we use the provided file
-        if (GridFromFile(M, N, argv[8]) == -1){
+        if (GridFromFile(grid, argv[8]) == -1){
             semctl(semId,0,IPC_RMID,0));
             msgctl(qId, IPC_RMID, 0);
             exit(EXIT_FAILURE);;
@@ -147,12 +148,12 @@ int main(int argc, char* argv[])
     int pid = 0;
     pid = fork();
     if (pid == 0){ // if we are the listener process
-        listenerProcess(M, N, P, T);
+        listenerProcess(grid, P, T);
     }
     for(int i = 0; i < P; ++i){
         pid = fork();
         if(pid == 0){
-            workerProcess(M, N, T);
+            workerProcess(grid, T);
         }
         /*test for error*/
     }
