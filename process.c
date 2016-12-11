@@ -234,10 +234,10 @@ void workerProcess(Grid grid, Genomes genomes, double* scores){
 static void modifyCreature(int mutationRate, int* genome, int genomeLength){
 	for(int j = 0; j < genomeLength; ++j){
 		if((rand() % 100) < mutationRate){ // if the move mutates
-			int prev = genome[j], new;
+			int new;
 			do {
 				new = rand()%8;
-			} while(prev == new)
+			} while(genome[j] == new)
 			genome[j] = new;
 		}
 	}
