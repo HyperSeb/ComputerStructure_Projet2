@@ -40,16 +40,16 @@ static void maxHeapify(int* indices, size_t i, size_t end, double* array) {
     }
 }
 
-int extractIndexForMax(MaxHeap* heap, double* array) {
+void extractIndexForMax(MaxHeap* heap, double* array) {
     if (heap -> count == 0) {
-        return - 1;
+        return;
     }
     
     swap(&heap->indices[0], &heap->indices[--count]);
     
     maxHeapify(heap -> indices, 0, count, array);
     
-    return heap->indices[count];
+    return;
 }
 
 static size_t parent(size_t index) {
