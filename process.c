@@ -242,8 +242,7 @@ static void createCreature(int* genome, int genomeLength){
 }
 
 //  0 fine, the heap is full
-// -1 offset == -1
-// -2 best manages to finish
+// -1 the masterprocess has to stop because the user pressed 'Q' or a perfect creature was detected
 static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberOfSlaves) {
 	while (!isFull(heap)) {
 		int offset;
@@ -261,7 +260,7 @@ static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberO
 			}
 			printf("One of the Creatures was able to reach the goal tile\n");
 			printf("All you can do now is watch his journey (B) or quit (Q)\n");
-			return -2;
+			return -1;
 		}
 		insertIndex(offset, heap, scores); // we insert the index in the heap
 	}
@@ -314,7 +313,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 			sendMessage(&msg);
 		}
 		
-		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves) == -2) {
+		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves) != 0) {
 			destroyMaxHeap(heap);
 			signal(2,1); // we have to signal we closed
 			return;
