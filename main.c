@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 {
     srand(time(NULL));
     // checks the arguments
-    if(argc != 8 || argc != 9){
+    if(argc != 8 && argc != 9){
         fprintf(stderr, "Invalid number of arguments\n");
         exit(EXIT_FAILURE);
     }
