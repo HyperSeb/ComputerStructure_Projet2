@@ -209,7 +209,7 @@ static double computeScore(Grid grid, int* genome, int genomeLength) {
 	
 void workerProcess(Grid grid, Genomes genomes, double* scores){
 	int offset;
-	while(stop == 0){
+	while(sharedStruct->stop == 0){
 		readMessage(1, &offset);
 		if (sharedStruct->stop != 0){
 			break;
@@ -231,14 +231,15 @@ void workerProcess(Grid grid, Genomes genomes, double* scores){
 }
 
 // modifies the genome
-static void modifyCreature(int mutationRate, int* genome, int genomeLength){
+static void modifyCreature(int mutationRate, int* goodGenome, int* badGenome, int genomeLength){
+	copyGenome(goodGenome, badGenome, genomeLength)
 	for(int j = 0; j < genomeLength; ++j){
 		if((rand() % 100) < mutationRate){ // if the move mutates
-			int new;
+			int newGenome;
 			do {
-				new = rand()%8;
-			} while(genome[j] == new)
-			genome[j] = new;
+				newGenome = rand()%8;
+			} while(genome[j] == newGenome)
+			genome[j] = newGenome;
 		}
 	}
 }
@@ -252,8 +253,8 @@ static void createCreature(int* genome, int genomeLength){
 
 //  0 fine, the heap is full
 // -1 offset == -1
-// -2 best arrives to finish
-static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores) {
+// -2 best manages to finish
+static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberOfSlaves) {
 	while (!isFull(heap)) {
 		int offset;
 		readMessage(2, &offset);
@@ -292,27 +293,34 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		myMsg msg = {/*type*/ 1, /*offset*/ i}; // we send a message to a worker
 		sendMessage(&msg);
 	}
-	if (fillHeapWithWorkersResults(heap) != 0) {
+	if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves) != 0) {
 		destroyMaxHeap(heap);
 		signal(2,1);
 		return;
 	}
 	
-	int beginOffset = genomes.numberOfCreatures * deletionRate / 100;
+	// other generations
+	int beginBadCreatures = genomes.numberOfCreatures * (100-deletionRate) / 100,
+	endGoodCreatures = genomes.numberOfCreatures * deletionRate / 100;
 	while(sharedStruct->stop != 2){
 		wait(1);
 		if(sharedStruct->stop == 2){
 			break;
 		}
 		
-		for(int i = beginOffset; i < genomes.numberOfCreatures; ++i){
-			index = extractIndexForMax(heap, scores);
-			modifyCreature(mutationRate, genomeAtIndex(genomes, index), genomeLength);
-			myMsg msg = {/*type*/ 1, /*offset*/ index}; // we send a message to a worker
+		// sort the heap untill we know the best creatures
+		for(int i = genomes.numberOfCreatures-1; i >= endGoodCreatures; --i){
+			extractIndexForMax(heap, scores);
+		}
+		// creates the new creatures
+		for(int i = 0; i < endGoodCreatures; ++i){
+			modifyCreature(mutationRate, genomeAtIndex(genomes, getTableElement(i)), 
+				genomeAtIndex(genomes, getTableElement(beginBadCreatures + i)), genomeLength);
+			myMsg msg = {1, getTableElement(beginBadCreatures + i)}; // we send a message to a worker
 			sendMessage(&msg);
 		}
 		
-		if (fillHeapWithWorkersResults(heap) == -2) {
+		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves) == -2) {
 			destroyMaxHeap(heap);
 			signal(2,1); // we have to signal we closed
 			return;
