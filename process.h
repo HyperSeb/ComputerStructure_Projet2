@@ -21,7 +21,7 @@ struct Genomes {
 };
 typedef struct Genomes Genomes;
 
-/* return a pointer to the genome a the creature
+/* return a pointer to the genome of a the creature
 */
 int* genomeAtIndex(Genomes genomes, int index);
 
