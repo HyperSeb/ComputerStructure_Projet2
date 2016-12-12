@@ -12,6 +12,7 @@ struct BestAndStop {
     int stop; //stop is equal to 0 if the program can run, to 1 if the master and worker process must close
     // (not the listener) and to 2 if the programm must close
 };
+typedef struct BestAndStop BestAndStop;
 
 struct Genomes {
     int* storage;
