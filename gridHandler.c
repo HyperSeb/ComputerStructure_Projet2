@@ -6,24 +6,12 @@ bool equalPos(Position p1, Position p2) {
     return p1.x == p2.x && p1.y == p2.y;
 }
 
-static bool* ptrInGrid(Grid grid, Position position) {
-    if (!(0 <= position.x && position.x < grid.width && 0 <= position.y && position.y < grid.height)) {
-        fprintf(stderr, "ptrInGrid accessed out of the grid");
-        return NULL;
-    }
-    return &(grid.storage[position.x * grid.width + position.y]);
-}
-
 bool getInGrid(Grid grid, Position position) {
-    bool* ptr = ptrInGrid(grid, position);
-    return ptr == NULL ? obstacle : *ptr;
+    return grid.storage[position.x * grid.width + position.y];
 }
 
 void setInGrid(Grid grid, Position position, bool value) {
-    bool* ptr = ptrInGrid(grid, position);
-	if (ptr != NULL) {
-        *ptr = value;
-    } 
+    grid.storage[position.x * grid.width + position.y] = value;
 }
 
 void fillGridRandomly(Grid* grid) {
