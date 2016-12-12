@@ -58,7 +58,7 @@ static void* getSharedMemory(int index, key_t key, size_t size) {
         exit(EXIT_FAILURE);
     }
     //the shared memory will only be closed when all the realted 
-    //will be closed, so we can flag it to be closed now
+    //processes will be closed, so we can flag it to be closed now
     shmctl(memId, IPC_RMID, 0);
     return ptr;
 }
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 {
     srand(time(NULL));
     // checks the arguments
-    if(argc != 8 && argc != 9){
+    if(argc != 8 || argc != 9){
         fprintf(stderr, "Invalid number of arguments\n");
         exit(EXIT_FAILURE);
     }
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 
     
     // semaphore initialisation, 0 handles the "mutual exclusion" of the best index 
-    // in memory 1 handles the number of generation we still have to create
+    // in shared memory, 1 handles the number of generation we still have to create,
     // 2 is used to count the number of processes that have ended
     semopts.val = 1;
     semctl(semId, 0, SETVAL, semopts);
@@ -146,8 +146,8 @@ int main(int argc, char* argv[])
     semctl(semId, 2, SETVAL, semopts);
     
     
-    // Creating the worker and listener processes, all of them will end on exit(0),
-    // thus we don't need to take care of what happens after the call to the process function
+    // Creating the worker and listener processes, all of them will end on exit(),
+    // thus their processes never reach what is after the call to their "process function"
     int pid = 0;
     pid = fork();
     if (pid == 0){ // if we are the listener process
