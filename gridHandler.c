@@ -127,7 +127,27 @@ int fillgridWithFile(Grid* grid, char* name) {
 }
 
 void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex) {
-    // Do we show the genes?
+    
+    for (int i = 0; i < genomeLength; i++) {
+        swtich (genome[i]) {
+#define MOVE(dX, dY, intValue, character) \
+            case intValue:\
+                printf(character);\
+                break;
+#include "move.txt"
+            default:
+                fprintf(stderr, "unexpected inexistant genome code\n");
+        }
+    }
+    printf("\n");
+    for (int i = 0; i < genomeLength; i++) {
+        if (i == geneIndex) {
+            printf("^");
+        } else {
+            printf(" ");
+        }
+    }
+    printf("\n\n");
     
     // Do we use # or this?
 	
