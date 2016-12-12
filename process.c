@@ -222,15 +222,14 @@ void workerProcess(Grid grid, Genomes genomes, double* scores){
 }
 
 // modifies the genome
-static void modifyCreature(int mutationRate, int* goodGenome, int* badGenome, int genomeLength){
-	copyGenome(goodGenome, badGenome, genomeLength)
+static void modifyCreature(int mutationRate, int* genome, int genomeLength){
 	for(int j = 0; j < genomeLength; ++j){
 		if((rand() % 100) < mutationRate){ // if the move mutates
-			int newGenome;
+			int newGene;
 			do {
-				newGenome = rand()%8;
-			} while(genome[j] == newGenome)
-			genome[j] = newGenome;
+				newGene = rand()%8;
+			} while(genome[j] == newGene)
+			genome[j] = newGene;
 		}
 	}
 }
@@ -291,8 +290,8 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	}
 	
 	// other generations
-	int beginBadCreatures = genomes.numberOfCreatures * (100-deletionRate) / 100,
-	endGoodCreatures = genomes.numberOfCreatures * deletionRate / 100;
+	int numberToReplace = (genomes.numberOfCreatures * deletionRate) / 100;
+	
 	while(sharedStruct->stop != 2){
 		wait(1);
 		if(sharedStruct->stop == 2){
@@ -300,14 +299,18 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		}
 		
 		// sort the heap untill we know the best creatures
-		for(int i = genomes.numberOfCreatures-1; i >= endGoodCreatures; --i){
+		for(int i = 0; i < numberToReplace; ++i){
 			extractIndexForMax(heap, scores);
 		}
 		// creates the new creatures
-		for(int i = 0; i < endGoodCreatures; ++i){
-			modifyCreature(mutationRate, genomeAtIndex(genomes, (heap->indices)[i]), 
-				genomeAtIndex(genomes, (heap->indices)[beginBadCreatures + i]), genomeLength);
-			myMsg msg = {1, (heap->indices)[beginBadCreatures + i]}; // we send a message to a worker
+		for(int i = 0; i < numberToReplace; ++i){
+			int currentIndex = (heap->indices)[heap->count + i],
+			motherIndex = (heap->indices)[rand() % heap->count];
+			
+			copyGenome(genomeAtIndex(genomes, motherIndex), genomeAtIndex(genomes, currentIndex), genomeLength);
+			modifyCreature(mutationRate, genomeAtIndex(genomes, currentIndex), genomeLength);
+			
+			myMsg msg = {1, currentIndex}; // we send a message to a worker
 			sendMessage(&msg);
 		}
 		
