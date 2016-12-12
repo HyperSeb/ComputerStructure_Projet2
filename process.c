@@ -76,11 +76,6 @@ static Position computeResultOfMove(Grid grid, Position from, int deltaX, int de
 static Position performCreature(Grid grid, int* genome, int genomeLength, bool displayingSteps) {
     Position currentPosition = grid.start;
 
-    if (displayingSteps) {
-        // display start
-        displayGrid(grid, grid.start, genome, genomeLength, -1);
-    }
-
     for (int geneIndex = -1; geneIndex < genomeLength; geneIndex++) {
         int direction = geneIndex == -1 ? -1 : genome[geneIndex];
         int deltaX, deltaY;
@@ -102,15 +97,11 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
         Position underPosition;
         do {
             Position nextPosition = computeResultOfMove(grid, currentPosition, deltaX, deltaY);
-            if (nextPosition.x == currentPosition.x && nextPosition.y == currentPosition.y) {
-                // do we display this one?
-            } else {
-                currentPosition = nextPosition;
-                
-                if (displayingSteps) {
-                    sleep(1);
-                    displayGrid(grid, currentPosition, genome, genomeLength, geneIndex);
-                }
+            currentPosition = nextPosition;
+            
+            if (displayingSteps) {
+                sleep(1);
+                displayGrid(grid, currentPosition, genome, genomeLength, geneIndex);
             }
             
             deltaY++;
