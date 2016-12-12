@@ -16,7 +16,7 @@ typedef struct MaxHeap MaxHeap;
 MaxHeap* createMaxHeap(size_t capacity);
 
 // extract the maximum value in the heap and place it after the heap (at elements[count])
-int extractIndexForMax(MaxHeap* heap, double* array);
+void extractIndexForMax(MaxHeap* heap, double* array);
 
 // insert a new value in the heap, return false if there is not enough room for the heap
 void insertIndex(int index, MaxHeap* heap, double* array);
