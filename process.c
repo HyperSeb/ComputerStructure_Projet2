@@ -314,9 +314,9 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		}
 		// creates the new creatures
 		for(int i = 0; i < endGoodCreatures; ++i){
-			modifyCreature(mutationRate, genomeAtIndex(genomes, getTableElement(i)), 
-				genomeAtIndex(genomes, getTableElement(beginBadCreatures + i)), genomeLength);
-			myMsg msg = {1, getTableElement(beginBadCreatures + i)}; // we send a message to a worker
+			modifyCreature(mutationRate, genomeAtIndex(genomes, (heap->indices)[i]), 
+				genomeAtIndex(genomes, (heap->indices)[beginBadCreatures + i]), genomeLength);
+			myMsg msg = {1, (heap->indices)[beginBadCreatures + i]}; // we send a message to a worker
 			sendMessage(&msg);
 		}
 		
