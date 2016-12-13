@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "gridHandler"
+#include "gridHandler.h"
 
 struct {
     long mtype;
