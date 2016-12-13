@@ -51,4 +51,4 @@ int fillgridWithFile(Grid* grid, char* name);
 void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex);
 
 
-endif /*gridHandler_h*/
+#endif /*gridHandler_h*/
