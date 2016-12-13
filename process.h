@@ -1,3 +1,6 @@
+#ifndef process_h
+#define process_h
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "gridHandler"
@@ -39,3 +42,5 @@ void workerProcess(Grid grid, Genomes genomes, double* scores);
 the creatures
 */
 void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes, double* scores);
+
+#endif /*process_h*/
