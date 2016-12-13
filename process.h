@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include "gridHandler.h"
 
-struct {
+struct myMsg {
     long mtype;
     int offset;
-} myMsg;
+};
+typedef struct myMsg myMsg;
 
 struct BestAndStop {
     int best; // offset of the best creature
