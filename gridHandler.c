@@ -55,7 +55,7 @@ void fillGridRandomly(Grid* grid) {
     do {
         finish.x = (rand() % (grid->width - 2)) + 1;
         finish.y = (rand() % (grid->height - 2)) + 1;
-    } while (equalPos(start, finish))
+    } while (equalPos(start, finish));
         
     setInGrid(*grid, finish, !obstacle);
     grid->finish = finish;
@@ -77,10 +77,10 @@ static int readPosition(FILE* gridFile, Grid grid, Position* p) {
 }
 
 int fillgridWithFile(Grid* grid, char* name) {
-	FILE* gridFile = fopen(path, "r");
+	FILE* gridFile = fopen(name, "r");
     int result = -1;
     if (gridFile != NULL) {
-    	Position tmpPos;
+    	Position tmpPosition;
         
         // fill with free tiles
         for (Position p = {0, 0}; p.y < grid->height; p.y++) {
@@ -90,15 +90,15 @@ int fillgridWithFile(Grid* grid, char* name) {
         }
     	//begin tile
 	    if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
-            grid->start = tmpPos;
+            grid->start = tmpPosition;
             // end tile
 	        if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
-                grid->finish = tmpPos;
+                grid->finish = tmpPosition;
         
                 int readStatus;
                 
                 while ((readStatus = readPosition(gridFile, *grid, &tmpPosition)) == 0) {
-                    setInGrid(*grid, tmpPos, obstacle);
+                    setInGrid(*grid, tmpPosition, obstacle);
                 }
                 // it must be because read failed
                 if (readStatus == -1) {
@@ -131,7 +131,7 @@ int fillgridWithFile(Grid* grid, char* name) {
         } else {
             fprintf(stderr, "bad start position \n");
         }
-        fclose(gridFile)
+        fclose(gridFile);
     } else {
         fprintf(stderr, "Could not open file \n");
     }
@@ -141,7 +141,7 @@ int fillgridWithFile(Grid* grid, char* name) {
 void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex) {
     
     for (int i = 0; i < genomeLength; i++) {
-        swtich (genome[i]) {
+        switch (genome[i]) {
 #define MOVE(dX, dY, intValue, character) \
             case intValue:\
                 printf(character);\
