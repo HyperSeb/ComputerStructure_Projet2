@@ -12,15 +12,15 @@ static void swap(int* a, int* b) {
 MaxHeap* createMaxHeap(size_t capacity) {
     MaxHeap* heap = malloc(sizeof(MaxHeap));
     if (heap != NULL) {
-        heap -> elements = malloc(capacity * sizeof(int));
-        if (heap -> elements != NULL) {
+        heap -> indices = malloc(capacity * sizeof(int));
+        if (heap -> indices != NULL) {
             heap -> count = 0;
             heap -> capacity = capacity;
             return heap;
         }
         free(heap);
     }
-    return NULL
+    return NULL;
 }
 
 static void maxHeapify(int* indices, size_t i, size_t end, double* array) {
@@ -35,8 +35,8 @@ static void maxHeapify(int* indices, size_t i, size_t end, double* array) {
         lowest = r;
     }
     if (lowest != i) {
-        swap(&indices(i], &indices[lowest]);
-        maxHeapify(heap, lowest, end, array);
+        swap(&indices[i], &indices[lowest]);
+        maxHeapify(indices, lowest, end, array);
     }
 }
 
@@ -45,11 +45,10 @@ void extractIndexForMax(MaxHeap* heap, double* array) {
         return;
     }
     
-    swap(&heap->indices[0], &heap->indices[--count]);
+    heap -> count -= 1;
+    swap(&heap->indices[0], &heap->indices[heap -> count]);
     
-    maxHeapify(heap -> indices, 0, count, array);
-    
-    return;
+    maxHeapify(heap -> indices, 0, heap -> count, array);
 }
 
 static size_t parent(size_t index) {
@@ -61,7 +60,7 @@ bool insertValueIn(int value, MaxHeap* heap, double* array) {
         int* indices = heap -> indices;
         
         size_t currentIndex = heap -> count++;
-        size_t parentIndex = parent(current);
+        size_t parentIndex = parent(currentIndex);
         
         while (array[indices[currentIndex]] > array[indices[parentIndex]]) {
             swap(&indices[currentIndex], &indices[parentIndex]);
