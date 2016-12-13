@@ -31,16 +31,17 @@ int* genomeAtIndex(Genomes genomes, int index);
 /* a process which goal is to listen to the user commands, to print the journey 
 of the best creature so far and to close the progam
 */
-void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves);
+void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, int semId, BestAndStop * sharedStruct);
 
 /* a process which goal is to compute the score of a creature which index is 
 given by the master process through a message queue
 */
-void workerProcess(Grid grid, Genomes genomes, double* scores);
+void workerProcess(Grid grid, Genomes genomes, double* scores, int qId, int semId, BestAndStop * sharedStruct);
 
 /* a process which goal is to handle the generation/classification/mutation of 
 the creatures
 */
-void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes, double* scores);
+void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genomes genomes, double* scores
+                    , int qId, int semId, BestAndStop * sharedStruct);
 
 #endif /*process_h*/
