@@ -18,11 +18,6 @@ union semun{
     structseminfo* __buf; // buffer for IPC_INFO 
 };
 
-// global variables
-int qId;
-int semId;
-BestAndStop* sharedStruct;
-
 
 static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
     int value = atoi(argv[index]);
@@ -89,6 +84,8 @@ int main(int argc, char* argv[])
     // shared memory management
     key_t key1, key2, key3, key4, keysem, keyq;
     pid_t pid;
+    int qId, semId;
+    BestAndStop* sharedStruct;
     union semun semopts;
     
     key1 = ftok(".", 'M'); // offset of the best creature, the begin and end in the grid
@@ -151,15 +148,15 @@ int main(int argc, char* argv[])
     int pid = 0;
     pid = fork();
     if (pid == 0){ // if we are the listener process
-        listenerProcess(grid, genomes, P);
+        listenerProcess(grid, genomes, P, qId, semId, sharedStruct);
     }
     for(int i = 0; i < P; ++i){
         pid = fork();
         if(pid == 0){
-            workerProcess(grid, genomes, scores);
+            workerProcess(grid, genomes, scores, qId, semId, sharedStruct);
         }
         /*test for error*/
     }
-    masterProcess(P, p, m, genomes, scores);
+    masterProcess(P, p, m, genomes, scores, qId, semId, sharedStruct);
     exit(EXIT_SUCCESS);
 }
