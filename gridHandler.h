@@ -1,3 +1,6 @@
+#ifndef gridHandler_h
+#define gridHandler_h
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -46,3 +49,6 @@ int fillgridWithFile(Grid* grid, char* name);
 /* display the grid on stdout
 */
 void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex);
+
+
+endif /*gridHandler_h*/
