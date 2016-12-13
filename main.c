@@ -74,11 +74,11 @@ int main(int argc, char* argv[])
     m = getArgumentInInterval(argv, 6, 1, 10),
     T = getArgumentInInterval(argv, 7, 5, 20);
     
-    // if we randomly generate the grid, we have to increase the size of M and N by 1
+    // if we randomly generate the grid, we have to increase the size of M and N by 2
     // and to genrerate walls on the outer border
     if(argc == 8){
-        ++M;
-        ++N;
+        M+=2;
+        N+=2;
     }
     
     // shared memory management
