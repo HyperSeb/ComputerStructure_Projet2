@@ -63,7 +63,7 @@ static Position computeResultOfMove(Grid grid, Position from, int deltaX, int de
     Position nextPosition = {from.x + deltaX, from.y + deltaY};
     
     if (getInGrid(grid, nextPosition) == obstacle) {
-        nextPosition = {from.x, from.y + deltaY};
+        Position nextPosition = {from.x, from.y + deltaY};
         if (getInGrid(grid, nextPosition) == obstacle) {
             return from;
         }
@@ -105,9 +105,9 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
             }
             
             deltaY++;
-            underPosition = {currentPosition.x, currentPosition.y - 1};
-
-        } while (getInGrid(grid, underPosition) != obstacle)
+            Position tmp = {currentPosition.x, currentPosition.y - 1};
+            underPosition = tmp;
+        } while (getInGrid(grid, underPosition) != obstacle);
     }
     
     return currentPosition;
@@ -122,10 +122,10 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 	printf("      M followed by a number to request that number of generations\n");
 	printf("      B to display the best creature so far\n");
 	printf("      Q to close the program\n");
-	while(Offsets->stop != 2){
+	while(sharedStruct->stop != 2){
 		char tmp = 'a';
 		unsigned int number = 0;
-		scanf(%c, &tmp);
+		scanf("%c", &tmp);
 		switch (tmp) {
 		// we do the signal(s) if the user typed 'G' or 'M' even if Offsets->stop == 1 
 		// since a signal is an atomical operation and it won't generate errors (it's just useless)
@@ -133,7 +133,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 			signal(semId, 1, 1);
 			break;
 		case 'M' :
-			if(scanf(%ud, &number) != -1){
+			if(scanf("%ud", &number) != -1){
 				signal(1,number);
 			} else {
 				printf("your should type a number after 'M'\n");
@@ -141,7 +141,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 			break;
 		case 'B' :
 			wait(semId, 0);
-			best = sharedStruct->best;
+			int best = sharedStruct->best;
 			if(best == -1){
 				signal(semId, 0, 1);
 				printf("I'm sorry Dave, I'm afraid I can't do that\n");
@@ -150,7 +150,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 				int bestCreature[genomes.genomeLength];
 				copyGenome(genomeAtIndex(genomes, best), bestCreature, genomes.genomeLength);
 				signal(semId, 0, 1);
-				showBest(grid, bestCreature, genomeLength);
+				showBest(grid, bestCreature, genomes.genomeLength);
 			}
 			break;
 		case 'Q' :
