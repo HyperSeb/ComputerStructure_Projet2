@@ -163,7 +163,7 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
     
     // Do we use # or this?
 	
-    static const char* face = "☻" // utf8: {0xE2, 0x98, 0xBB, '\0'};
+    static const char* face = "☻"; // utf8: {0xE2, 0x98, 0xBB, '\0'};
     static const char* start = "S";
     static const char* finish = "F";
     static const char* obstacleCenter = "X";
