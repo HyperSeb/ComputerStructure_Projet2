@@ -66,7 +66,8 @@ static Position computeResultOfMove(Grid grid, Position from, int deltaX, int de
     Position nextPosition = {from.x + deltaX, from.y + deltaY};
     
     if (getInGrid(grid, nextPosition) == obstacle) {
-        Position nextPosition = {from.x, from.y + deltaY};
+        Position tmp = {from.x, from.y + deltaY};
+        nextPosition = tmp;
         if (getInGrid(grid, nextPosition) == obstacle) {
             return from;
         }
