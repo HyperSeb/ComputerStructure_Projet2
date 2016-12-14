@@ -55,7 +55,7 @@ static size_t parent(size_t index) {
     return (index == 0) ? 0 : (index - 1) / 2;
 }
 
-bool insertValueIn(int value, MaxHeap* heap, double* array) {
+bool insertIndex(int value, MaxHeap* heap, double* array) {
     if (heap != NULL && ((heap -> count) < (heap -> capacity))) {
         int* indices = heap -> indices;
         
