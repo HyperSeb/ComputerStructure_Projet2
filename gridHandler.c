@@ -163,10 +163,10 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
     
     // Do we use # or this?
 	
-    static const char face[4] = {0xE2, 0x98, 0xBB, '\0'};
-    static const char start[4] = {'S', '\0'};
-    static const char finish[4] = {'F', '\0'};
-    static const char obstacleCenter[4] = {'X', '\0'};
+    static const char* face = "☻" // utf8: {0xE2, 0x98, 0xBB, '\0'};
+    static const char* start = "S";
+    static const char* finish = "F";
+    static const char* obstacleCenter = "X";
     
     printf("+");
     for (int j = 0; j < grid.width; j++) {
