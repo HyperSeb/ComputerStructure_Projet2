@@ -173,6 +173,10 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
         Position underPosition;
         do {
             Position nextPosition = computeResultOfMove(grid, currentPosition, deltaX, deltaY);
+            
+            deltaX = nextPosition.x - currentPosition.x; // the fall continue to be vertical if the partial move was
+            deltaY--; // gravity
+            
             currentPosition = nextPosition;
             
             if (displayingSteps) {
@@ -181,9 +185,9 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
                 sleep(1);
             }
             
-            deltaY--; // gravity
-            Position tmp = {currentPosition.x, currentPosition.y - 1};
-            underPosition = tmp;
+            underPosition.x = currentPosition.x;
+            underPosition.y = currentPosition.y - 1;
+
         } while (getInGrid(grid, underPosition) != obstacle);
     }
     
