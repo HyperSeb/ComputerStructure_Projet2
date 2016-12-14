@@ -30,18 +30,23 @@ static void signal(int semId, int offset, int value){ // we will need to signal 
 	}
 }
 
-static void sendMessage(int qId, myMsg* msg){
-	if(msgsnd(qId,msg, sizeof(myMsg) - sizeof(long), 0) < 0){
+static void sendMessage(int qId, long type, int offset){
+	myMsg msg;
+	msg.type = type;
+	msg.offset = offset;
+	if(msgsnd(qId, &msg, sizeof(myMsg) - sizeof(long), 0) < 0){
 		fprintf(stderr, "sending a message failed\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
-static void readMessage(int qId, long type, int* offset){
-	if(msgrcv(qId, offset, sizeof(myMsg) - sizeof(long), type,  0) < 0){
+static int readMessage(int qId, long type){
+	myMsg temp;
+	if(msgrcv(qId, &temp, sizeof(myMsg) - sizeof(long), type,  0) < 0){
 		fprintf(stderr, "reading a message failed\n");
 		exit(EXIT_FAILURE);
 	}
+	return temp.offset;
 }
 
 int* genomeAtIndex(Genomes genomes, int index) {
@@ -183,7 +188,7 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
     }
     
     if (displayingSteps) {
-        printf("Voilà\n");
+        printf("The creature succeded!\n");
     }
     return currentPosition;
 }
@@ -217,6 +222,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 		case 'B' :
 			wait(semId, 0);
 			int best = sharedStruct->best;
+			printf("best is %d", best);
 			if(best == -1){
 				signal(semId, 0, 1);
 				printf("I'm sorry Dave, I'm afraid I can't do that\n");
@@ -232,17 +238,12 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 			if (sharedStruct->stop == 0){ // we have to close workers and master process
 				sharedStruct->stop = 2;
 				// all the workers processes will now close as soon as they get a message
-				for(size_t i = 0; i < numberOfSlaves; ++i){
-					myMsg msg;
-					msg.type = 1; // the offset doesn't matter
-					sendMessage(qId, &msg);
+				for(int i = 0; i < numberOfSlaves; ++i){
+					sendMessage(qId, 1, 1); // the offset doesn't matter
 				}
 				// the master can be waiting for a new generation or a message
 				signal(semId, 1, 1); // we tell him to stop to wait (and to close)
-				myMsg msg; // we send a close message to the master
-				msg.type = 2;
-				msg.offset = -1;
-				sendMessage(qId, &msg);
+				sendMessage(qId, 2, -1); // we send a close message to the master
 			} else {
 				sharedStruct->stop = 2;
 			}
@@ -276,7 +277,7 @@ static double computeScore(Grid grid, int* genome, int genomeLength) {
 void workerProcess(Grid grid, Genomes genomes, double* scores, int qId, int semId, BestAndStop * sharedStruct){
 	int offset;
 	while(sharedStruct->stop == 0){
-		readMessage(qId, 1, &offset);
+		offset = readMessage(qId, 1);
 		if (sharedStruct->stop != 0){
 			break;
 		}
@@ -287,10 +288,7 @@ void workerProcess(Grid grid, Genomes genomes, double* scores, int qId, int semI
 			sharedStruct->best = offset;
 		}
 		signal(semId, 0, 1);
-		myMsg msg; // tells the master the math is done
-		msg.type = 2;
-		msg.offset = offset;
-		sendMessage(qId, &msg);
+		sendMessage(qId, 2, offset); // tells the master the math is done
 	}
 	signal(semId, 2, 1); // signals we closed
 	exit(EXIT_SUCCESS);
@@ -320,18 +318,15 @@ static void createCreature(int* genome, int genomeLength){
 // -1 the masterprocess has to stop because the user pressed 'Q' or a perfect creature was detected
 static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberOfSlaves, int qId, BestAndStop* sharedStruct) {
 	while (!isFull(heap)) {
-		int offset;
-		readMessage(qId, 2, &offset);
+		int offset = readMessage(qId, 2);
 		if(offset == -1){
 			return -1;
 		}
 		if(scores[offset] == 0.0){
 			sharedStruct->stop = 1;
-			for(size_t j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
+			for(int j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
 				// is waiting for a message
-				myMsg msg;
-				msg.type = 1; // the offset doesn't matter
-				sendMessage(qId, &msg);
+				sendMessage(qId, 1, 1); // the offset doesn't matter
 			}
 			printf("One of the Creatures was able to reach the goal tile\n");
 			printf("All you can do now is watch his journey (B) or quit (Q)\n");
@@ -355,8 +350,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	}
 	for(int i = 0; i < genomes.numberOfCreatures; ++i){
 		createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
-		myMsg msg = {/*type*/ 1, /*offset*/ i}; // we send a message to a worker
-		sendMessage(qId, &msg);
+		sendMessage(qId, 1, i);// we send a message to a worker
 	}
 	if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId, sharedStruct) != 0) {
 		destroyMaxHeap(heap);
@@ -385,8 +379,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 			copyGenome(genomeAtIndex(genomes, motherIndex), genomeAtIndex(genomes, currentIndex), genomes.genomeLength);
 			modifyCreature(mutationRate, genomeAtIndex(genomes, currentIndex), genomes.genomeLength);
 			
-			myMsg msg = {1, currentIndex}; // we send a message to a worker
-			sendMessage(qId, &msg);
+			sendMessage(qId, 1, currentIndex);// we send a message to a worker
 		}
 		
 		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId, sharedStruct) != 0) {
