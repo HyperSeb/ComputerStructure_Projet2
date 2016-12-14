@@ -21,17 +21,6 @@ union semun {
     struct seminfo* __buf; // buffer for IPC_INFO 
 };
 
-
-static int getArgumentInInterval(char** argv, int index, int lowerBound, int upperBound) {
-    int value = atoi(argv[index]);
-    if (lowerBound > value || value > upperBound) {
-        fprintf(stderr, "Invalid argument %d\n", index);
-        exit(EXIT_FAILURE);
-    } else {
-        return value;
-    }
-}
-
 /* create a shared memory segment, using the id number index, the key key and 
 allocating a quantity of memory given by size
 */
@@ -66,16 +55,27 @@ int main(int argc, char* argv[])
     srand(time(NULL));
     // checks the arguments
     if(argc != 8 && argc != 9){
-        fprintf(stderr, "Invalid number of arguments\n");
+        fprintf(stderr, "Invalid number of arguments, expected 7 or 8 arguments: \n");
+        int index = 0;
+#define ARGUMENT(shortName, lowerBound, upperBound, longName, description)\
+        fprintf(stderr, "argument n°%d, " #shortName " between " #lowerBound " and " #upperBound " which is the " description "\n", ++index);
+#include "arguments.txt"
+        fprintf(stderr, "optional argument n°%d, the name of a file which contains information of the grid\n", ++index);
         exit(EXIT_FAILURE);
     }
-    int M = getArgumentInInterval(argv, 1, /*bounds*/ 3, 5),
-    N = getArgumentInInterval(argv, 2, 5, 10),
-    P = getArgumentInInterval(argv, 3, 1, 10),
-    C = getArgumentInInterval(argv, 4, 100, 1000),
-    p = getArgumentInInterval(argv, 5, 20, 80),
-    m = getArgumentInInterval(argv, 6, 1, 10),
-    T = getArgumentInInterval(argv, 7, 5, 20);
+
+    int index = 0;
+    bool badArguments = false;
+#define ARGUMENT(shortName, lowerBound, upperBound, longName, description)\
+    int shortName = atoi(argv[++index]);\
+    if (lowerBound > shortName || shortName > upperBound) {\
+        fprintf(stderr, "Invalid value '%s' for argument n°%d, " #shortName " (which is the " description ") is expected to be between " #lowerBound " and " #upperBound "\n", argv[index], index);\
+        badArguments = true;\
+    }
+#include "arguments.txt"
+    if (badArguments) {
+        exit(EXIT_FAILURE);
+    }
     
     // if we randomly generate the grid, we have to increase the size of M and N by 2
     // and to genrerate walls on the outer border
