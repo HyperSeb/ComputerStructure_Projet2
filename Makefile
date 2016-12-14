@@ -7,7 +7,7 @@ CFLAGS=--std=c99 -W -Wall --pedantic -DNDEBUG
 all: evolve
 
 evolve: gridHandler.o PriorityQueue.o process.o main.o
-	$(CC) -o evolve gridHandler.o PriorityQueue.o process.o main.o
+	$(CC) -o evolve gridHandler.o PriorityQueue.o process.o main.o -lm
 
 gridHandler.o: gridHandler.c
 	$(CC) -o gridHandler.o -c gridHandler.c $(CFLAGS)
