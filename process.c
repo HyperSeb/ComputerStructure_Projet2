@@ -176,7 +176,7 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
                 sleep(1);
             }
             
-            deltaY++;
+            deltaY--; // gravity
             Position tmp = {currentPosition.x, currentPosition.y - 1};
             underPosition = tmp;
         } while (getInGrid(grid, underPosition) != obstacle);
