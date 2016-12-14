@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include "PriorityQueue.h"
 
@@ -55,7 +56,7 @@ static size_t parent(size_t index) {
     return (index == 0) ? 0 : (index - 1) / 2;
 }
 
-bool insertIndex(int value, MaxHeap* heap, double* array) {
+void insertIndex(int value, MaxHeap* heap, double* array) {
     if (heap != NULL && ((heap -> count) < (heap -> capacity))) {
         int* indices = heap -> indices;
         
@@ -69,9 +70,8 @@ bool insertIndex(int value, MaxHeap* heap, double* array) {
             currentIndex = parentIndex;
             parentIndex = parent(currentIndex);
         }
-        return true;
     } else {
-        return false;
+        fprintf(stderr, "heap is full, no element can be inserted with insertIndex");
     }
 }
 
