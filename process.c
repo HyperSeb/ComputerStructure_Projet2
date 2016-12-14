@@ -1,3 +1,5 @@
+#define _SVID_SOURCE
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <time.h>
