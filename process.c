@@ -59,21 +59,88 @@ static void copyGenome(int* from, int* to, int genomeLength) {
 	}
 }
 
-static Position computeResultOfMove(Grid grid, Position from, int deltaX, int deltaY) {
-    // Magic should appear here
-    
-    // Naive (waiting for magic)
-    Position nextPosition = {from.x + deltaX, from.y + deltaY};
-    
-    if (getInGrid(grid, nextPosition) == obstacle) {
-        Position tmp = {from.x, from.y + deltaY};
-        nextPosition = tmp;
-        if (getInGrid(grid, nextPosition) == obstacle) {
-            return from;
-        }
+
+static bool moreThanHalf(int half, int full) {
+    if (full == 0) {
+        return true;
+    } else if (full > 0){
+        return 2 * half >= full;
+    } else {
+        return 2 * half < full;
     }
+}
+
+// assuming deltaX = -1, 0 or 1, else undefined behaviour may appear
+static Position computeResultOfMove(Grid grid, Position from, int deltaX, int deltaY) {
+    int verticalDirection = deltaY < 0 ? -1 : 1;
     
-    return nextPosition;
+    if (deltaX == 0) {
+        // vertical move, go forward until end or obstacle
+        for (int dy = 0; dy * verticalDirection < deltaY * verticalDirection; dy += verticalDirection) {
+            Position further = {from.x, from.y + dy + verticalDirection};
+            
+            if (getInGrid(grid, further) == obstacle) {
+                Position current = {from.x, from.y + dy};
+                return current;
+            }
+        }
+        
+        Position current = {from.x, from.y + deltaY};
+        return current;
+        
+    } else if (deltaY == 0) {
+        // horizontal move, the destination is either an obstacle or not
+        Position further = {from.x + deltaX, from.y};
+        if (getInGrid(grid, further) == obstacle) {
+            return from;
+        } else {
+            return further;
+        }
+    } else {
+        // diagonal move, go vertically forward,
+        // if there is an obstacle in the column or in the column in the direction of deltaX, a special comportement is performed
+        for (int dy = 0; dy * verticalDirection < deltaY * verticalDirection; dy += verticalDirection) {
+            Position current = {from.x + (moreThanHalf(dy, deltaY) ? deltaX : 0), from.y + dy};
+            
+            Position further = {from.x, from.y + dy + verticalDirection},
+            nextToFurther = {from.x + deltaX, from.y + dy + verticalDirection};
+            
+            if (getInGrid(grid, further) == obstacle && getInGrid(grid, nextToFurther) == obstacle) {
+                // both are obstacle, don't go further
+                return current;
+                
+            } else if (getInGrid(grid, further) == obstacle) {
+                // the one in the column we start the move is an obstacle,
+                // depending on how far we are in the move, we land on the obstacle, or continue
+                if (moreThanHalf(dy + verticalDirection, deltaY)) {
+                    continue;
+                } else {
+                    return current;
+                }
+                
+            } else if (getInGrid(grid, nextToFurther) == obstacle) {
+                // the one in the column we are going is an obstacle,
+                // depending on how far we are in the move, we land on it, or fall vertically
+                if (moreThanHalf(dy + verticalDirection, deltaY)) {
+                    if (moreThanHalf(dy, deltaY)) {
+                        return current;
+                    } else {
+                        return computeResultOfMove(grid, current, 0, deltaY - dy); // the rest of the move is vertical
+                    }
+                } else {
+                    return computeResultOfMove(grid, current, 0, deltaY - dy); // the rest of the move is vertical
+                }
+                
+            } else {
+                // no obstacle, we continue
+                continue;
+            }
+        }
+        
+        // no problematic obstacle were met, the move is completely done
+        Position current = {from.x + deltaX, from.y + deltaY};
+        return current;
+    }
 }
 
 // return the final position of the creature
