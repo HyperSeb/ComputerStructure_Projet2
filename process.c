@@ -128,7 +128,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 	while(sharedStruct->stop != 2){
 		char tmp = 'a';
 		unsigned int number = 0;
-		scanf("%c", &tmp);
+		scanf(" %c", &tmp);
 		switch (tmp) {
 		// we do the signal(s) if the user typed 'G' or 'M' even if Offsets->stop == 1 
 		// since a signal is an atomical operation and it won't generate errors (it's just useless)
@@ -136,7 +136,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 			signal(semId, 1, 1);
 			break;
 		case 'M' :
-			if(scanf("%ud", &number) != -1){
+			if(scanf(" %ud", &number) != -1){
 				signal(semId,1,number);
 			} else {
 				printf("your should type a number after 'M'\n");
