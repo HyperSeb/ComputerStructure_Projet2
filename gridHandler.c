@@ -71,7 +71,6 @@ static int readPosition(FILE* gridFile, Grid grid, Position* p) {
         fprintf(stderr, "position in the file is out of bound \n");
         return -2;
     } else {
-       	p->y = grid.height - 1 - p->y;
         return 0;
     }
 }
@@ -173,7 +172,7 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
         printf("---+");
     }
     printf("\n");
-    for (Position p = {0, 0}; p.y < grid.height; p.y++) {
+    for (Position p = {0, grid.height-1}; p.y >= 0; p.y--) {
         printf("|");
         for (p.x = 0; p.x < grid.width; p.x++) {
             // ___|
