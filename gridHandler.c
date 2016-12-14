@@ -208,7 +208,7 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
         
         printf("+");
         for (p.x = 0; p.x < grid.width; p.x++) {
-            Position underP = {p.x, p.y + 1}, nextP = {p.x + 1, p.y}, underNextP = {p.x + 1, p.y + 1};
+            Position underP = {p.x, p.y - 1}, nextP = {p.x + 1, p.y}, underNextP = {p.x + 1, p.y - 1};
             // ---+
             if (underP.y == grid.height) {
                 printf("---");
