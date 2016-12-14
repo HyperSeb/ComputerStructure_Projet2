@@ -151,11 +151,15 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
         }
     }
     printf("\n");
-    for (int i = 0; i < genomeLength; i++) {
-        if (i == geneIndex) {
-            printf("^");
-        } else {
-            printf(" ");
+    if (geneIndex == -1) {
+        printf("start");
+    } else {
+        for (int i = 0; i < genomeLength; i++) {
+            if (i == geneIndex) {
+                printf("^");
+            } else {
+                printf(" ");
+            }
         }
     }
     printf("\n\n");
