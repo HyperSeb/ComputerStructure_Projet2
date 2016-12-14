@@ -11,11 +11,11 @@
 #include "gridHandler.h"
 #include "process.h"
 
-union semun{
-    intval; 
-    structsemid_ds* buf; // buffer for IPC_STAT, IPC_SET 
-    unsignedshort int* array; // arrayfor GETALL, SETALL 
-    structseminfo* __buf; // buffer for IPC_INFO 
+union semun {
+    int val; 
+    struct semid_ds* buf; // buffer for IPC_STAT, IPC_SET 
+    unsigned short int* array; // arrayfor GETALL, SETALL 
+    struct seminfo* __buf; // buffer for IPC_INFO 
 };
 
 
@@ -25,7 +25,7 @@ static int getArgumentInInterval(char** argv, int index, int lowerBound, int upp
         fprintf(stderr, "Invalid argument %d\n", index);
         exit(EXIT_FAILURE);
     } else {
-        return value
+        return value;
     }
 }
 
@@ -83,7 +83,6 @@ int main(int argc, char* argv[])
     
     // shared memory management
     key_t key1, key2, key3, key4, keysem, keyq;
-    pid_t pid;
     int qId, semId;
     BestAndStop* sharedStruct;
     union semun semopts;
@@ -99,7 +98,7 @@ int main(int argc, char* argv[])
     Genomes genomes = {NULL, C, T};
     double* scores = NULL;
 
-    sharedStruct = (bestBegEnd*) getSharedMemory(1, key1, sizeof(BestAndStop));
+    sharedStruct = (BestAndStop*) getSharedMemory(1, key1, sizeof(BestAndStop));
     scores = (double*) getSharedMemory(2, key2, C * sizeof(double));
     genomes.storage = (int*) getSharedMemory(3, key3, C * T * sizeof(int));
     grid.storage = (bool*) getSharedMemory(4, key4, M * N * sizeof(bool));
@@ -115,18 +114,18 @@ int main(int argc, char* argv[])
     printf("Attempting to create new message queue\n");
     if((qId = msgget(keyq, IPC_CREAT|IPC_EXCL|0666)) == -1){
         fprintf(stderr, "message queue already exists\n");
-        semctl(semId,0,IPC_RMID,0)); // we "free" the semaphores
+        semctl(semId,0,IPC_RMID,0); // we "free" the semaphores
         exit(EXIT_FAILURE);
     }
     
     // Initialisation of the shared memory
     if(argc == 8){ 
-        randomGrid(&grid); // random generation of the grid and Offsets
+        fillGridRandomly(&grid); // random generation of the grid and Offsets
     }else{ // we use the provided file
-        if (GridFromFile(grid, argv[8]) == -1){
-            semctl(semId,0,IPC_RMID,0));
+        if (fillgridWithFile(&grid, argv[8]) == -1){
+            semctl(semId,0,IPC_RMID,0);
             msgctl(qId, IPC_RMID, 0);
-            exit(EXIT_FAILURE);;
+            exit(EXIT_FAILURE);
         }
     }
     sharedStruct->best = -1;
@@ -145,7 +144,7 @@ int main(int argc, char* argv[])
     
     // Creating the worker and listener processes, all of them will end on exit(),
     // thus their processes never reach what is after the call to their "process function"
-    int pid = 0;
+    pid_t pid = 0;
     pid = fork();
     if (pid == 0){ // if we are the listener process
         listenerProcess(grid, genomes, P, qId, semId, sharedStruct);
