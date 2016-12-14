@@ -62,6 +62,8 @@ bool insertValueIn(int value, MaxHeap* heap, double* array) {
         size_t currentIndex = heap -> count++;
         size_t parentIndex = parent(currentIndex);
         
+        indices[heap -> count] = value;
+        
         while (array[indices[currentIndex]] > array[indices[parentIndex]]) {
             swap(&indices[currentIndex], &indices[parentIndex]);
             currentIndex = parentIndex;
