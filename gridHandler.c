@@ -67,7 +67,7 @@ void fillGridRandomly(Grid* grid) {
 static int readPosition(FILE* gridFile, Grid grid, Position* p) {
     if(fscanf(gridFile, "%d %d", &(p->x), &(p->y)) == -1) {
         return -1;
-    } else if (p->x >= (grid.width-2) || p->x <= 0 || p->y >= (grid.height-2) || p->y <= 0) {
+    } else if (p->x >= (grid.width) || p->x < 0 || p->y >= (grid.height) || p->y < 0) {
         fprintf(stderr, "position in the file is out of bound \n");
         return -2;
     } else {
