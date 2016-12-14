@@ -7,6 +7,7 @@
 #include <sys/sem.h>
 #include <sys/msg.h>
 #include <unistd.h>
+#include <math.h>
 #include "process.h"
 #include "gridHandler.h" //in order to acces the "ind" function
 #include "PriorityQueue.h"
@@ -181,9 +182,9 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 		wait(semId, 2);
 	}
 	// delete the semaphore/message queue, the shared memory has already been flagged for deletion
-	semctl(semId,0,IPC_RMID,0));
+	semctl(semId,0,IPC_RMID,0);
 	msgctl(qId, IPC_RMID, 0);
-	exit(EXIT_SUCCES);
+	exit(EXIT_SUCCESS);
 }
 
 // computes the score of the creature
@@ -205,7 +206,7 @@ void workerProcess(Grid grid, Genomes genomes, double* scores, int qId, int semI
 		if (sharedStruct->stop != 0){
 			break;
 		}
-		scores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomeLength);
+		scores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomes.genomeLength);
 		
 		wait(semId, 0); // we may modify the best creature's offset
 		if(scores[sharedStruct->best] > scores[offset] || scores[sharedStruct->best] == -1){
@@ -228,7 +229,7 @@ static void modifyCreature(int mutationRate, int* genome, int genomeLength){
 			int newGene;
 			do {
 				newGene = rand()%8;
-			} while(genome[j] == newGene)
+			} while(genome[j] == newGene);
 			genome[j] = newGene;
 		}
 	}
@@ -243,7 +244,7 @@ static void createCreature(int* genome, int genomeLength){
 
 //  0 fine, the heap is full
 // -1 the masterprocess has to stop because the user pressed 'Q' or a perfect creature was detected
-static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberOfSlaves, int qId) {
+static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberOfSlaves, int qId, BestAndStop* sharedStruct) {
 	while (!isFull(heap)) {
 		int offset;
 		readMessage(qId, 2, &offset);
@@ -278,12 +279,12 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		signal(semId, 2, 1);
 		return;
 	}
-	for(int i = 0; i < genomes.numberOfCreature; ++i){
+	for(int i = 0; i < genomes.numberOfCreatures; ++i){
 		createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
 		myMsg msg = {/*type*/ 1, /*offset*/ i}; // we send a message to a worker
 		sendMessage(qId, &msg);
 	}
-	if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId) != 0) {
+	if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId, sharedStruct) != 0) {
 		destroyMaxHeap(heap);
 		signal(semId, 2, 1);
 		return;
@@ -307,14 +308,14 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 			int currentIndex = (heap->indices)[heap->count + i],
 			motherIndex = (heap->indices)[rand() % heap->count];
 			
-			copyGenome(genomeAtIndex(genomes, motherIndex), genomeAtIndex(genomes, currentIndex), genomeLength);
-			modifyCreature(mutationRate, genomeAtIndex(genomes, currentIndex), genomeLength);
+			copyGenome(genomeAtIndex(genomes, motherIndex), genomeAtIndex(genomes, currentIndex), genomes.genomeLength);
+			modifyCreature(mutationRate, genomeAtIndex(genomes, currentIndex), genomes.genomeLength);
 			
 			myMsg msg = {1, currentIndex}; // we send a message to a worker
 			sendMessage(qId, &msg);
 		}
 		
-		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId) != 0) {
+		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId, sharedStruct) != 0) {
 			destroyMaxHeap(heap);
 			signal(semId, 2,1); // we have to signal we closed
 			return;
