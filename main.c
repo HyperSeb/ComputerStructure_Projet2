@@ -1,3 +1,5 @@
+#define _SVID_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
