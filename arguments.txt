@@ -1,0 +1,15 @@
+
+// ARGUMENT(shortName, lowerBound, upperBound, longName, description)
+
+#ifdef ARGUMENT
+
+ARGUMENT(M,   3,    5, height,            "height of the grid")
+ARGUMENT(N,   5,   10, width,             "width of the grid")
+ARGUMENT(P,   1,   10, numberOfSlaves,    "number of processes evaluating creatures")
+ARGUMENT(C, 100, 1000, numberOfCreatures, "number of creatures")
+ARGUMENT(p,  20,   80, deletionRate,      "percentage of creatures replaced per generation")
+ARGUMENT(m,   1,   10, mutationRate,      "percentage of modified moves when a creature is copied")
+ARGUMENT(T,   5,   20, genomeLength,      "number of moves a creature can do")
+
+#undef ARGUMENT
+#endif
