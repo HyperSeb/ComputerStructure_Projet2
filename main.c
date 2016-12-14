@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
     // thus their processes never reach what is after the call to their "process function"
     pid_t pid = 0;
     pid = fork();
-    if (pid == 0){ // if we are the listener process
+    if (pid == 0){ // if we are the master process
         masterProcess(P, p, m, genomes, scores, qId, semId, sharedStruct);
     }
     for(int i = 0; i < P; ++i){
