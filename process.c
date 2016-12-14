@@ -186,7 +186,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 	// delete the semaphore/message queue, the shared memory has already been flagged for deletion
 	semctl(semId,0,IPC_RMID,0);
 	msgctl(qId, IPC_RMID, 0);
-	exit(EXIT_SUCCESS);
+	return;
 }
 
 // computes the score of the creature
@@ -279,7 +279,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	if(sharedStruct->stop == 2){
 		destroyMaxHeap(heap);
 		signal(semId, 2, 1);
-		return;
+		exit(EXIT_SUCCESS);
 	}
 	for(int i = 0; i < genomes.numberOfCreatures; ++i){
 		createCreature(genomeAtIndex(genomes, i), genomes.genomeLength);
@@ -289,7 +289,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId, sharedStruct) != 0) {
 		destroyMaxHeap(heap);
 		signal(semId, 2, 1);
-		return;
+		exit(EXIT_SUCCESS);
 	}
 	
 	// other generations
@@ -320,10 +320,10 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		if (fillHeapWithWorkersResults(heap, scores, numberOfSlaves, qId, sharedStruct) != 0) {
 			destroyMaxHeap(heap);
 			signal(semId, 2,1); // we have to signal we closed
-			return;
+			exit(EXIT_SUCCESS);
 		}
 	}
 	destroyMaxHeap(heap);
 	signal(semId, 2, 1);
-	return;
+	exit(EXIT_SUCCESS);
 }
