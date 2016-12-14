@@ -136,7 +136,7 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 			signal(semId, 1, 1);
 			break;
 		case 'M' :
-			if(scanf(" %ud", &number) != -1){
+			if(scanf("%ud", &number) != -1){
 				signal(semId,1,number);
 			} else {
 				printf("your should type a number after 'M'\n");
