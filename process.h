@@ -6,7 +6,7 @@
 #include "gridHandler.h"
 
 struct myMsg {
-    long mtype;
+    long type;
     int offset;
 };
 typedef struct myMsg myMsg;
