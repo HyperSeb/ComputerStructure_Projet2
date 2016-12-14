@@ -7,6 +7,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include <sys/msg.h>
+#include <unistd.h>
 #include <time.h>
 #include <stddef.h>
 #include <stdbool.h>
