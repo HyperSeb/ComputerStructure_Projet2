@@ -145,12 +145,12 @@ int main(int argc, char* argv[])
     semctl(semId, 2, SETVAL, semopts);
     
     
-    // Creating the worker and listener processes, all of them will end on exit(),
+    // Creating the worker and master processes, all of them will end on exit(),
     // thus their processes never reach what is after the call to their "process function"
     pid_t pid = 0;
     pid = fork();
     if (pid == 0){ // if we are the listener process
-        listenerProcess(grid, genomes, P, qId, semId, sharedStruct);
+        masterProcess(P, p, m, genomes, scores, qId, semId, sharedStruct);
     }
     for(int i = 0; i < P; ++i){
         pid = fork();
@@ -159,6 +159,6 @@ int main(int argc, char* argv[])
         }
         /*test for error*/
     }
-    masterProcess(P, p, m, genomes, scores, qId, semId, sharedStruct);
+    listenerProcess(grid, genomes, P, qId, semId, sharedStruct);
     exit(EXIT_SUCCESS);
 }
