@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 // the value representing an obstacle in the grid
-const bool obstacle = true;
+#define obstacle true
 
 struct Position {
     int x;
