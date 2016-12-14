@@ -71,7 +71,7 @@ static bool moreThanHalf(int half, int full) {
     } else if (full > 0){
         return 2 * half >= full;
     } else {
-        return 2 * half < full;
+        return 2 * half <= full;
     }
 }
 
