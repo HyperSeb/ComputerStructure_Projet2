@@ -211,7 +211,7 @@ void workerProcess(Grid grid, Genomes genomes, double* scores, int qId, int semI
 		scores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomes.genomeLength);
 		
 		wait(semId, 0); // we may modify the best creature's offset
-		if(scores[sharedStruct->best] > scores[offset] || scores[sharedStruct->best] == -1){
+		if(scores[sharedStruct->best] > scores[offset] || sharedStruct->best == -1){
 			sharedStruct->best = offset;
 		}
 		signal(semId, 0, 1);
