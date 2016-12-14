@@ -104,6 +104,7 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
             
             if (displayingSteps) {
                 sleep(1);
+                printf("\n\n\n\n\n\n");
                 displayGrid(grid, currentPosition, genome, genomeLength, geneIndex);
             }
             
