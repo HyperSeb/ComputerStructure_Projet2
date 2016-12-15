@@ -77,13 +77,6 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
     
-    // if we randomly generate the grid, we have to increase the size of M and N by 2
-    // and to genrerate walls on the outer border
-    if(argc == 8){
-        M+=2;
-        N+=2;
-    }
-    
     // shared memory management
     key_t key1, key2, key3, key4, keysem, keyq;
     int qId, semId;
