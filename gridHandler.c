@@ -8,7 +8,6 @@ bool equalPos(Position p1, Position p2) {
 
 static bool* ptrInGrid(Grid grid, Position position) {
 	if (!(0 <= position.x && position.x < grid.width && 0 <= position.y && position.y < grid.height)) {
-		fprintf(stderr, "ptrInGrid accessed out of the grid");
 		return NULL;
 	}
 	return &(grid.storage[position.x * grid.width + position.y]);
@@ -23,6 +22,8 @@ void setInGrid(Grid grid, Position position, bool value) {
    bool* ptr = ptrInGrid(grid, position);
 	if (ptr != NULL) {
 		*ptr = value;
+	} else {
+		fprintf(stderr, "setInGrid out of the grid");
 	}
 }
 
@@ -75,8 +76,8 @@ static int readPosition(FILE* gridFile, Grid grid, Position* p) {
     }
 }
 
-int fillgridWithFile(Grid* grid, char* name) {
-	FILE* gridFile = fopen(name, "r");
+int fillGridWithFile(Grid* grid, char* name) {
+    FILE* gridFile = fopen(name, "r");
     int result = -1;
     if (gridFile != NULL) {
     	Position tmpPosition;
@@ -88,10 +89,10 @@ int fillgridWithFile(Grid* grid, char* name) {
             }
         }
     	//begin tile
-	    if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
+        if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
             grid->start = tmpPosition;
             // end tile
-	        if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
+            if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
                 grid->finish = tmpPosition;
         
                 int readStatus;
@@ -101,26 +102,12 @@ int fillgridWithFile(Grid* grid, char* name) {
                 }
                 // it must be because read failed
                 if (readStatus == -1) {
-                    bool missingBorder = false;
-                    // check borders are obstacles
-                    for (int y = 0; !missingBorder && y < grid->height; y++) {
-                        Position left = {0, y}, right = {grid->width - 1, y};
-                        missingBorder = getInGrid(*grid, left) != obstacle || getInGrid(*grid, right) != obstacle;
-                    }
-                    for (int x = 0; !missingBorder && x < grid->width; x++) {
-                        Position down = {x, 0}, up = {x, grid->height - 1};
-                        missingBorder = getInGrid(*grid, down) != obstacle || getInGrid(*grid, up) != obstacle;
-                    }
-                    if (!missingBorder) {
-                    	// checks if there is a tile on the stating/ending position
-                    	if(getInGrid(*grid, grid->start) != obstacle && getInGrid(*grid, grid->finish) != obstacle) {
-                            result = 0;
-                        } else {
-                            fprintf(stderr, "there is a tile over the begin/end position");
-                    	}
+                    // checks if there is a tile on the stating/ending position
+                    if(getInGrid(*grid, grid->start) != obstacle && getInGrid(*grid, grid->finish) != obstacle) {
+                        result = 0;
                     } else {
-                        fprintf(stderr, "missing border");
-                    }
+                        fprintf(stderr, "there is a tile over the begin/end position");
+                	}
                 } else {
                     fprintf(stderr, "bad obstacle position \n");
                 }
