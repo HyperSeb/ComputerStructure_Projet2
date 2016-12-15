@@ -13,8 +13,7 @@ typedef struct myMsg myMsg;
 
 struct BestAndStop {
     int best; // offset of the best creature
-    int stop; //stop is equal to 0 if the program can run, to 1 if the master and worker process must close
-    // (not the listener) and to 2 if the programm must close
+    bool stop; //stop is equal to false if the program can run or to true if the master and workers processes have to stop
 };
 typedef struct BestAndStop BestAndStop;
 
