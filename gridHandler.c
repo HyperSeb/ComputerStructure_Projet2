@@ -44,6 +44,12 @@ void fillGridRandomly(Grid* grid) {
     do {
         finish.x = (rand() % (grid->width - 2)) + 1;
         finish.y = (rand() % (grid->height - 2)) + 1;
+        
+        Position underFinish = {finish.x, finish.y - 1};
+        while (getInGrid(*grid, underFinish) != obstacle) {
+            underFinish.y -= 1;
+            finish.y -= 1;
+        }
     } while (equalPos(start, finish));
         
     setInGrid(*grid, finish, !obstacle);
