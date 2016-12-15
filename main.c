@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
     if(argc == 8){ 
         fillGridRandomly(&grid); // random generation of the grid and Offsets
     }else{ // we use the provided file
-        if (fillgridWithFile(&grid, argv[8]) == -1){
+        if (fillGridWithFile(&grid, argv[8]) == -1){
             semctl(semId,0,IPC_RMID,0);
             msgctl(qId, IPC_RMID, 0);
             exit(EXIT_FAILURE);
