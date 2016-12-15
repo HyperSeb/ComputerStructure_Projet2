@@ -44,7 +44,7 @@ checks if there is a border of tiles and if there is no tile over the
 begin/end flag
 return -1 if an error occured
 */
-int fillgridWithFile(Grid* grid, char* name);
+int fillGridWithFile(Grid* grid, char* name);
 
 /* display the grid on stdout
 */
