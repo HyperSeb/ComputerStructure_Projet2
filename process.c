@@ -202,16 +202,17 @@ static void showBest(Grid grid, int* genome, int genomeLength){
 }
 
 void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, int semId, BestAndStop * sharedStruct){
+	bool stopAll = false;
 	printf("type: G to request a new generation\n");
 	printf("      M followed by a number to request that number of generations\n");
 	printf("      B to display the best creature so far\n");
 	printf("      Q to close the program\n");
-	while(sharedStruct->stop != 2){
+	while(true){
 		char tmp = 'a';
 		unsigned int number = 0;
 		scanf(" %c", &tmp);
 		switch (tmp) {
-		// we do the signal(s) if the user typed 'G' or 'M' even if Offsets->stop == 1 
+		// we do the signal(s) if the user typed 'G' or 'M' even if Offsets->stop == true 
 		// since a signal is an atomical operation and it won't generate errors (it's just useless)
 		case 'G' : 
 			signal(semId, 1, 1);
@@ -239,8 +240,8 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 			}
 			break;
 		case 'Q' :
-			if (sharedStruct->stop == 0){ // we have to close workers and master process
-				sharedStruct->stop = 2;
+			if (!(sharedStruct->stop)){ // we have to close workers and master process
+				sharedStruct->stop = true;
 				// all the workers processes will now close as soon as they get a message
 				for(int i = 0; i < numberOfSlaves; ++i){
 					sendMessage(qId, 1, 1); // the offset doesn't matter
@@ -248,12 +249,14 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 				// the master can be waiting for a new generation or a message
 				signal(semId, 1, 1); // we tell him to stop to wait (and to close)
 				sendMessage(qId, 2, -1); // we send a close message to the master
-			} else {
-				sharedStruct->stop = 2;
 			}
+			stopAll = true;
 			break;
 		default: 
 			printf("invalid command \n");
+		}
+		if (stopAll){
+			break;
 		}
 	}
 				
@@ -280,9 +283,9 @@ static double computeScore(Grid grid, int* genome, int genomeLength) {
 	
 void workerProcess(Grid grid, Genomes genomes, double* scores, int qId, int semId, BestAndStop * sharedStruct){
 	int offset;
-	while(sharedStruct->stop == 0){
+	while(!(sharedStruct->stop)){
 		offset = readMessage(qId, 1);
-		if (sharedStruct->stop != 0){
+		if (sharedStruct->stop){
 			break;
 		}
 		scores[offset] = computeScore(grid, genomeAtIndex(genomes, offset), genomes.genomeLength);
@@ -327,7 +330,7 @@ static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberO
 			return -1;
 		}
 		if(scores[offset] == 0.0){
-			sharedStruct->stop = 1;
+			sharedStruct->stop = true;
 			for(int j = 0; j < numberOfSlaves; ++j){ // fake messages to be sure no worker 
 				// is waiting for a message
 				sendMessage(qId, 1, 1); // the offset doesn't matter
@@ -347,7 +350,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	
 	// first generation
 	wait(semId, 1);
-	if(sharedStruct->stop == 2){
+	if(sharedStruct->stop){
 		destroyMaxHeap(heap);
 		signal(semId, 2, 1);
 		exit(EXIT_SUCCESS);
@@ -365,9 +368,9 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	// other generations
 	int numberToReplace = (genomes.numberOfCreatures * deletionRate) / 100;
 	
-	while(sharedStruct->stop != 2){
+	while(!(sharedStruct->stop)){
 		wait(semId, 1);
-		if(sharedStruct->stop == 2){
+		if(sharedStruct->stop){
 			break;
 		}
 		
