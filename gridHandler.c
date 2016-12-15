@@ -34,18 +34,6 @@ void fillGridRandomly(Grid* grid) {
         }
     }
     
-    // borders are set to be obstacles
-    for (int y = 0; y < grid->height; y++) {
-        Position left = {0, y}, right = {grid->width - 1, y};
-        setInGrid(*grid, left, obstacle);
-        setInGrid(*grid, right, obstacle);
-    }
-    for (int x = 0; x < grid->width; x++) {
-        Position down = {x, 0}, up = {x, grid->height - 1};
-        setInGrid(*grid, down, obstacle);
-        setInGrid(*grid, up, obstacle);
-    }
-    
     Position start, finish;
     start.x = (rand() % (grid->width - 2)) + 1;
     start.y = (rand() % (grid->height - 2)) + 1;
