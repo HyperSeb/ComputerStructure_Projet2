@@ -64,7 +64,7 @@ static void copyGenome(int* from, int* to, int genomeLength) {
 	}
 }
 
-
+// tests whether the first integer is greater than the second
 static bool moreThanHalf(int half, int full) {
     if (full == 0) {
         return true;
@@ -75,6 +75,7 @@ static bool moreThanHalf(int half, int full) {
     }
 }
 
+// computes the result of a move
 // assuming deltaX = -1, 0 or 1, else undefined behaviour may appear
 static Position computeResultOfMove(Grid grid, Position from, int deltaX, int deltaY) {
     int verticalDirection = deltaY < 0 ? -1 : 1;
@@ -148,7 +149,7 @@ static Position computeResultOfMove(Grid grid, Position from, int deltaX, int de
     }
 }
 
-// return the final position of the creature
+// returns the final position of the creature
 static Position performCreature(Grid grid, int* genome, int genomeLength, bool displayingSteps) {
     Position currentPosition = grid.start;
 
@@ -196,6 +197,7 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
     }
     return currentPosition;
 }
+
 // show the best creature's movements on the terminal
 static void showBest(Grid grid, int* genome, int genomeLength){
 	performCreature(grid, genome, genomeLength, true);
@@ -271,8 +273,6 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 
 // computes the score of the creature
 static double computeScore(Grid grid, int* genome, int genomeLength) {
-	// c'est pas cette fonction qui gère le cas où on aurait un bestScore == 0
-	// ne gere pas non plus le cas ou on changerait le meilleur
     Position finalPosition = performCreature(grid, genome, genomeLength, false);
     
     int dX = finalPosition.x - grid.finish.x;
@@ -321,8 +321,9 @@ static void createCreature(int* genome, int genomeLength){
 	}
 }
 
-//  0 fine, the heap is full
-// -1 the masterprocess has to stop because the user pressed 'Q' or a perfect creature was detected
+/* insert the index of a creature in the heap now that its corresponding score is computed
+returns 0 if it is fine or if the heap is full and -1 if the masterprocess has to stop because 
+the user pressed 'Q' or a perfect creature was detected */
 static int fillHeapWithWorkersResults(MaxHeap* heap, double* scores, int numberOfSlaves, int qId, BestAndStop* sharedStruct) {
 	while (!isFull(heap)) {
 		int offset = readMessage(qId, 2);
