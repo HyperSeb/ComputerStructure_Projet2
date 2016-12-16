@@ -167,13 +167,13 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
             // ___|
             printf(" ");
             if (equalPos(p, creaturePosition)) {
-                printf(face);
+                printf("%s", face);
             } else if (equalPos(p, grid.start)) {
-                printf(start);
+                printf("%s", start);
             } else if (equalPos(p, grid.finish)) {
-                printf(finish);
+                printf("%s", finish);
             } else if (getInGrid(grid, p) == obstacle) {
-                printf(obstacleCenter); // distinction between obstacles and free place with obstacles around
+                printf("%s", obstacleCenter); // distinction between obstacles and free place with obstacles around
             } else {
                 printf(" ");
             }
