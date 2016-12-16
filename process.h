@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "gridHandler.h"
 
+// the only field needed in the message is the offset of the concerned creature
 struct myMsg {
     long type;
     int offset;
@@ -13,7 +14,8 @@ typedef struct myMsg myMsg;
 
 struct BestAndStop {
     int best; // offset of the best creature
-    bool stop; //stop is equal to false if the program can run or to true if the master and workers processes have to stop
+    bool stop; //stop is equal to false if the program can run or to true if the master 
+    // and workers processes have to stop
 };
 typedef struct BestAndStop BestAndStop;
 
@@ -24,8 +26,7 @@ struct Genomes {
 };
 typedef struct Genomes Genomes;
 
-/* return a pointer to the genome of a the creature
-*/
+// returns a pointer to the genome of a the creature
 int* genomeAtIndex(Genomes genomes, int index);
 
 /* a process which goal is to listen to the user commands, to print the journey 
