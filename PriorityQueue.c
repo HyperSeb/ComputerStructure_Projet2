@@ -60,10 +60,10 @@ void insertIndex(int value, MaxHeap* heap, double* array) {
     if (heap != NULL && ((heap -> count) < (heap -> capacity))) {
         int* indices = heap -> indices;
         
-        size_t currentIndex = heap -> count++;
+        size_t currentIndex = heap -> count;
         size_t parentIndex = parent(currentIndex);
         
-        indices[heap -> count] = value;
+        indices[heap -> count++] = value;
         
         while (array[indices[currentIndex]] > array[indices[parentIndex]]) {
             swap(&indices[currentIndex], &indices[parentIndex]);
