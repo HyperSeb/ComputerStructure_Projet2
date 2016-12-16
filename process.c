@@ -193,7 +193,7 @@ static Position performCreature(Grid grid, int* genome, int genomeLength, bool d
     }
     
     if (displayingSteps) {
-        printf("The creature succeded!\n");
+        printf("The journey is ended!\n");
     }
     return currentPosition;
 }
