@@ -6,6 +6,7 @@ bool equalPos(Position p1, Position p2) {
     return p1.x == p2.x && p1.y == p2.y;
 }
 
+// return a pointer to an adress of the grid
 static bool* ptrInGrid(Grid grid, Position position) {
 	if (!(0 <= position.x && position.x < grid.width && 0 <= position.y && position.y < grid.height)) {
 		return NULL;
@@ -35,15 +36,16 @@ void fillGridRandomly(Grid* grid) {
     }
     
     Position start, finish;
-    start.x = (rand() % (grid->width - 2)) + 1;
-    start.y = (rand() % (grid->height - 2)) + 1;
+    start.x = rand() % (grid->width - 1);
+    start.y = rand() % (grid->height - 1);
     
     setInGrid(*grid, start, !obstacle);
     grid->start = start;
     
+    // we want the finish nor to be in the air nor to be on the start
     do {
-        finish.x = (rand() % (grid->width - 2)) + 1;
-        finish.y = (rand() % (grid->height - 2)) + 1;
+        finish.x = rand() % (grid->width - 1);
+        finish.y = rand() % (grid->height - 1);
         
         Position underFinish = {finish.x, finish.y - 1};
         while (getInGrid(*grid, underFinish) != obstacle) {
@@ -56,9 +58,8 @@ void fillGridRandomly(Grid* grid) {
     grid->finish = finish;
 }
 
-//  0 fine
-// -1 read failed
-// -2 out of bounds
+/*reads a position in the file, returns 0 if the position is fine,
+-1 if the read failed and -2 if it is out of bounds */
 static int readPosition(FILE* gridFile, Grid grid, Position* p) {
     if(fscanf(gridFile, "%d %d", &(p->x), &(p->y)) == -1) {
         return -1;
@@ -82,10 +83,10 @@ int fillGridWithFile(Grid* grid, char* name) {
                 setInGrid(*grid, p, !obstacle);
             }
         }
-    	//begin tile
+    	//start tile
         if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
             grid->start = tmpPosition;
-            // end tile
+            // finish tile
             if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
                 grid->finish = tmpPosition;
         
@@ -145,7 +146,6 @@ void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLe
     }
     printf("\n\n");
     
-    // Do we use # or this?
 	
     static const char* face = "☻"; // utf8: {0xE2, 0x98, 0xBB, '\0'};
     static const char* start = "S";
