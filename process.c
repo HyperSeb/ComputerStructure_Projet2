@@ -229,7 +229,6 @@ void listenerProcess(Grid grid, Genomes genomes, int numberOfSlaves, int qId, in
 		case 'B' :
 			wait(semId, 0);
 			int best = sharedStruct->best;
-			printf("best is %d", best);
 			if(best == -1){
 				signal(semId, 0, 1);
 				printf("I'm sorry Dave, I'm afraid I can't do that\n");
