@@ -369,7 +369,7 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 	// other generations
 	int numberToReplace = (genomes.numberOfCreatures * deletionRate) / 100;
 	
-	for(int genNumbr = 0; !(sharedStruct->stop); printf("generation n°%d is complete\n", ++genNumbr)){
+	for(int genNumbr = 1; !(sharedStruct->stop); printf("generation n°%d is complete\n", ++genNumbr)){
 		wait(semId, 1);
 		if(sharedStruct->stop){
 			break;
