@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 #define ARGUMENT(shortName, lowerBound, upperBound, longName, description)\
         fprintf(stderr, "argument n°%d, " #shortName " between " #lowerBound " and " #upperBound " which is the " description "\n", ++index);
 #include "arguments.txt"
-        fprintf(stderr, "optional argument n°%d, the name of a file which contains information of the grid\n", ++index);
+        fprintf(stderr, "optional argument n°%d, the name of a file which contains the characteristics of the grid\n", ++index);
         exit(EXIT_FAILURE);
     }
 
