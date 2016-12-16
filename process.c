@@ -364,11 +364,12 @@ void masterProcess(int numberOfSlaves, int deletionRate, int mutationRate, Genom
 		signal(semId, 2, 1);
 		exit(EXIT_SUCCESS);
 	}
+	printf("generation n°1 is complete\n");
 	
 	// other generations
 	int numberToReplace = (genomes.numberOfCreatures * deletionRate) / 100;
 	
-	while(!(sharedStruct->stop)){
+	for(int genNumbr = 0; !(sharedStruct->stop); printf("generation n°%d is complete\n", ++genNumbr)){
 		wait(semId, 1);
 		if(sharedStruct->stop){
 			break;
