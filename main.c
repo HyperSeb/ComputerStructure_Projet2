@@ -28,7 +28,7 @@ static void* getSharedMemory(int index, key_t key, size_t size) {
     // open the shared memory segment - create if necessary
     int memId = shmget(key, size, IPC_CREAT|IPC_EXCL|0666);
     if(memId == -1){
-        printf("Shared memory segment %d exists - opening as client\n", index+1);
+        printf("Shared memory segment %d exists - opening as client\n", index);
         
         // segment probably already exists - try as a client
         if((memId = shmget(key, size, 0)) == -1){
@@ -36,7 +36,7 @@ static void* getSharedMemory(int index, key_t key, size_t size) {
             exit(EXIT_FAILURE);
         }
     } else {
-        printf("Creating shared memory segment %d\n", index+1);
+        printf("Creating shared memory segment %d\n", index);
     }
     void* ptr = shmat(memId, 0, 0);
     // map the shared memory segment into the current process
