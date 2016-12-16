@@ -38,8 +38,8 @@ void setInGrid(Grid grid, Position position, bool value);
 void fillGridRandomly(Grid* grid);
 
 /* fill the grid of the given size with content from a file named "name"
-checks if there is no tile over the begin/end flag,
-returns -1 if an error occured
+checks if there is no tile over the begin/end flag and if start and end 
+are different, returns -1 if an error occured
 */
 int fillGridWithFile(Grid* grid, char* name);
 
