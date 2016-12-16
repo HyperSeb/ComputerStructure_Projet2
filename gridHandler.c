@@ -36,16 +36,16 @@ void fillGridRandomly(Grid* grid) {
     }
     
     Position start, finish;
-    start.x = rand() % (grid->width - 1);
-    start.y = rand() % (grid->height - 1);
+    start.x = rand() % grid->width;
+    start.y = rand() % grid->height;
     
     setInGrid(*grid, start, !obstacle);
     grid->start = start;
     
     // we want the finish nor to be in the air nor to be on the start
     do {
-        finish.x = rand() % (grid->width - 1);
-        finish.y = rand() % (grid->height - 1);
+        finish.x = rand() % grid->width;
+        finish.y = rand() % grid->height;
         
         Position underFinish = {finish.x, finish.y - 1};
         while (getInGrid(*grid, underFinish) != obstacle) {
