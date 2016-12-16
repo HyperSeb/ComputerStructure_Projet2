@@ -89,23 +89,27 @@ int fillGridWithFile(Grid* grid, char* name) {
             // finish tile
             if(readPosition(gridFile, *grid, &tmpPosition) == 0) {
                 grid->finish = tmpPosition;
-        
-                int readStatus;
+        	
+				if(!equalPos(grid->finish, grid->start)){
+                	int readStatus;
                 
-                while ((readStatus = readPosition(gridFile, *grid, &tmpPosition)) == 0) {
-                    setInGrid(*grid, tmpPosition, obstacle);
-                }
-                // it must be because read failed
-                if (readStatus == -1) {
-                    // checks if there is a tile on the stating/ending position
-                    if(getInGrid(*grid, grid->start) != obstacle && getInGrid(*grid, grid->finish) != obstacle) {
-                        result = 0;
-                    } else {
-                        fprintf(stderr, "there is a tile over the begin/end position");
+             	   while ((readStatus = readPosition(gridFile, *grid, &tmpPosition)) == 0) {
+               	     setInGrid(*grid, tmpPosition, obstacle);
+            	    }
+            	    // it must be because read failed
+            	    if (readStatus == -1) {
+            	        // checks if there is a tile on the stating/ending position
+						if(getInGrid(*grid, grid->start) != obstacle && getInGrid(*grid, grid->finish) != obstacle) {
+           	          	   result = 0;
+						} else {
+							fprintf(stderr, "there is a tile over the begin/end position");
+						}
+                	} else {
+                    	fprintf(stderr, "bad obstacle position \n");
                 	}
-                } else {
-                    fprintf(stderr, "bad obstacle position \n");
-                }
+				} else {
+					fprintf(stderr, "same start and end position \n");
+				}
             } else {
                 fprintf(stderr, "bad finish position \n");
             }
