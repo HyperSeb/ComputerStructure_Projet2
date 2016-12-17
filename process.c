@@ -11,7 +11,8 @@
 #include <unistd.h>
 #include <math.h>
 #include "process.h"
-#include "gridHandler.h" //in order to acces the "ind" function
+#include "gridHandler.h"
+#include "creature.h"
 #include "PriorityQueue.h"
 
 static void wait(int semId, int offset){ // we create this function for readability
