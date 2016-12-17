@@ -6,16 +6,19 @@ CFLAGS=--std=c99 -W -Wall --pedantic -DNDEBUG
 
 all: evolve
 
-evolve: gridHandler.o PriorityQueue.o process.o main.o
+evolve: gridHandler.o creature.o PriorityQueue.o process.o main.o
 	$(CC) -o evolve gridHandler.o PriorityQueue.o process.o main.o -lm
 
-gridHandler.o: gridHandler.c
+gridHandler.o: gridHandler.c gridHandler.h
 	$(CC) -o gridHandler.o -c gridHandler.c $(CFLAGS)
 
-PriorityQueue.o: PriorityQueue.c
+creature.o: creature.c creature.h gridHandler.h move.txt
+	$(CC) -o creature.o -c creature.c $(CFLAGS)
+
+PriorityQueue.o: PriorityQueue.c PriorityQueue.h
 	$(CC) -o PriorityQueue.o -c PriorityQueue.c $(CFLAGS)
 
-process.o: process.c PriorityQueue.h gridHandler.h move.txt
+process.o: process.c creature.h PriorityQueue.h gridHandler.h move.txt
 	$(CC) -o process.o -c process.c $(CFLAGS)
 
 main.o: main.c process.h PriorityQueue.h gridHandler.h
