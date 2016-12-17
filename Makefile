@@ -18,7 +18,7 @@ creature.o: creature.c creature.h gridHandler.h move.txt
 PriorityQueue.o: PriorityQueue.c PriorityQueue.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-process.o: process.c creature.h PriorityQueue.h gridHandler.h move.txt
+process.o: process.c creature.h PriorityQueue.h gridHandler.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 main.o: main.c process.h PriorityQueue.h gridHandler.h
