@@ -1,3 +1,7 @@
+#ifndef creature_h
+#define creature_h
+
+#include "gridHandler.h"
 
 // return a random gene
 int randomGene();
@@ -13,3 +17,5 @@ void displayGenome(int* genome, int genomeLength, int geneIndex);
 
 // display the grid on stdout
 void displayGrid(Grid grid, Position creaturePosition);
+
+#endif /* creature_h */
