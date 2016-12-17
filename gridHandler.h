@@ -43,8 +43,5 @@ are different, returns -1 if an error occured
 */
 int fillGridWithFile(Grid* grid, char* name);
 
-// display the grid on stdout
-void displayGrid(Grid grid, Position creaturePosition, int* genome, int genomeLength, int geneIndex);
-
 
 #endif /*gridHandler_h*/
