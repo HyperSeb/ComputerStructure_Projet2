@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "gridHandler.h"
+#include "creature.h"
 
 // return a random gene
 int randomGene() {
