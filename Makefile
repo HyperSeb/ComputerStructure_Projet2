@@ -21,7 +21,7 @@ PriorityQueue.o: PriorityQueue.c PriorityQueue.h
 process.o: process.c creature.h PriorityQueue.h gridHandler.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-main.o: main.c process.h PriorityQueue.h gridHandler.h
+main.o: main.c process.h PriorityQueue.h gridHandler.h arguments.txt
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
