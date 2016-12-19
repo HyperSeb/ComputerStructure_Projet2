@@ -142,15 +142,27 @@ int main(int argc, char* argv[])
     // thus their processes never reach what is after the call to their "process function"
     pid_t pid = 0;
     pid = fork();
+    if (pid < 0){ // if the fork doesn't works, we close
+        fprintf(stderr, "the master's fork didn't worked\n");
+        semctl(semId,0,IPC_RMID,0);
+        msgctl(qId, IPC_RMID, 0);
+        exit(EXIT_FAILURE);
+    }
     if (pid == 0){ // if we are the master process
         masterProcess(P, p, m, genomes, scores, qId, semId, sharedStruct);
     }
     for(int i = 0; i < P; ++i){
         pid = fork();
+        if (pid < 0){ // the previously created processes will end since 
+            // the semaphores/waitqueues are destroyed
+            fprintf(stderr, "one of the worker's fork didn't worked\n");
+            semctl(semId,0,IPC_RMID,0);
+            msgctl(qId, IPC_RMID, 0);
+            exit(EXIT_FAILURE);
+        }
         if(pid == 0){
             workerProcess(grid, genomes, scores, qId, semId, sharedStruct);
         }
-        /*test for error*/
     }
     listenerProcess(grid, genomes, P, qId, semId, sharedStruct);
     exit(EXIT_SUCCESS);
